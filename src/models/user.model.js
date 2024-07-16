@@ -1,5 +1,9 @@
 
 import mongoose,{Schema} from "mongoose";
+import jwt  from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import dotenv from 'dotenv'
+dotenv.config();
 
 const userSchema = new Schema({
     username:{
@@ -31,6 +35,14 @@ const userSchema = new Schema({
         required:true,
 
     },
+    refereshToken:{
+        type:String,
+    },
+    password:{
+        type:String,
+        required:true,
+        trim:true,
+    },
 
     posts:[
         {
@@ -41,6 +53,43 @@ const userSchema = new Schema({
     
 
 }, {timestamps:true})
+
+// encrypt the password
+
+userSchema.pre("save", async function (next){
+    if(this.password.isModified("password")){
+        this.password = await bcrypt.hash(this.password,10)
+        next()
+    }
+});
+
+// checck if the password is correct or not
+
+userSchema.methods.isPasswordCorrect = async function(password){
+   return await bcrypt.compare(password,this.password)
+};
+
+// generating access and referesh tokens
+
+userSchema.methods.generateAccessToken = function(){
+    return jwt.sign(
+        {
+            _id:this._id,
+            email:this.email,
+            username: this.username,
+            fullName: this.fullName
+        },
+        
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+         expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+        }
+        
+    )
+}
+
+userSchema
+
 
 
 export const User = mongoose.model("User",userSchema);
