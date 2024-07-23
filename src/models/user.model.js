@@ -88,7 +88,17 @@ userSchema.methods.generateAccessToken = function(){
     )
 }
 
-userSchema
+userSchema.methods.generateRefereshToken= function(){
+    return jwt.sign(
+        {
+            _id:this._id
+        },
+        process.env.REFFERESH_TOKEN_SECRET,
+        {
+            expiresIn:process.env.REFFERESH_TOKEN_EXPIRY
+        }
+    )
+};
 
 
 
