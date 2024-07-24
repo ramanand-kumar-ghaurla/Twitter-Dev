@@ -115,6 +115,10 @@ dist
 .yarn/unplugged
 .yarn/build-state.yml
 .yarn/install-state.gz
+ramanand-kumar-ghaurla
+add ssh key
+
+ramanand-kumar-ghaurla.pub
 .pnp.*
 
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Node
