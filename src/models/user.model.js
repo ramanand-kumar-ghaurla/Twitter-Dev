@@ -25,14 +25,14 @@ const userSchema = new Schema({
 
     fullName:{
         type:String,
-        require:true,
+        required:true,
         trim:true,
         index:true
     },
 
     avtar:{
         type:String,
-        required:true,
+        
 
     },
     refereshToken:{
@@ -56,17 +56,25 @@ const userSchema = new Schema({
 
 // encrypt the password
 
+
+
 userSchema.pre("save", async function (next){
-    if(this.password.isModified("password")){
-        this.password = await bcrypt.hash(this.password,10)
+    console.log(this.password)
+    
+    if(this.isModified("password")){
+    this.password = await bcrypt.hash(this.password,10)
+    console.log(this.password)
         next()
     }
 });
+
+
 
 // checck if the password is correct or not
 
 userSchema.methods.isPasswordCorrect = async function(password){
    return await bcrypt.compare(password,this.password)
+
 };
 
 // generating access and referesh tokens
