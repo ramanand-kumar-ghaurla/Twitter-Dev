@@ -170,4 +170,43 @@ if(!isPasswordValid){
 })
 
 
-export {registerUser ,loginUser}
+// mrthod for logout the user
+
+const logoutUser = asyncHandler(async(req,res)=>{
+    try {
+       
+        await User.findByIdAndUpdate(req.user._id,
+            {
+                $set:{ refereshToken : undefined }
+            },
+            {
+                new:true
+            }
+        )
+
+        const options = {
+            httpOnly:true,
+            secure:true,
+        }
+        res.status(200)
+        .clearCookie("accessToken",options)
+        .clearCookie("refereshToken",options)
+        .json(
+            {
+                success:true,
+                messase:"User logged out successfully "
+            }
+        )
+        
+        
+    } catch (error) {
+        throw new apiError(
+            500,
+            "error in loging out user",error,
+            console.error(error)
+        )
+        
+    }
+})
+
+export {registerUser ,loginUser,logoutUser}
