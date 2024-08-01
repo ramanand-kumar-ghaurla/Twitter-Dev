@@ -3,25 +3,36 @@ import{apiError} from "../utiles/ApiError.js"
 import {User} from "../models/user.model.js"
 import {apiResponse} from "../utiles/apiResponse.js"
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import dotenv from 'dotenv'
+import mongoose from "mongoose";
+dotenv.config();
+import JsonWebTokenError from "jsonwebtoken/lib/JsonWebTokenError.js";
 
 
 // function for generating referesh and access token
 
 const generateAccessAndRefereshToken= async (userId)=>{
     try {
-
+      
         const user = await User.findById(userId)
         const accessToken= user.generateAccessToken()
         const refereshToken= user.generateRefereshToken()
 
-        user.refereshToken = refereshToken
-        user.save({validateBeforeSave:false})
-
+       
+       
+        user.refereshToken = refereshToken;
+       await user.save({validateBeforeSave:false})
+       
+        
+       
+        
         return {accessToken,refereshToken}
         
     } catch (error) {
         throw new apiError(500,
-            "error in generating referesh and access token"
+            "error in generating referesh and access token",
+            console.log(error)
         )
         
     }
@@ -30,7 +41,7 @@ const generateAccessAndRefereshToken= async (userId)=>{
 
 const registerUser = asyncHandler( async (req,res)=>{
 
-   try {
+   try {    
      // find the details from req
  
      const { username,email,fullName,password } = req.body
@@ -39,7 +50,7 @@ const registerUser = asyncHandler( async (req,res)=>{
      // validation on the all fields
  
      if(!username && !email && !fullName && !password){
-         new apiError(
+       throw  new apiError(
                      400,
                      "all fields are required",
          )
@@ -166,10 +177,7 @@ if(!isPasswordValid){
         "user logged in successfully"
     )
  )
-
 })
-
-
 // mrthod for logout the user
 
 const logoutUser = asyncHandler(async(req,res)=>{
@@ -209,4 +217,74 @@ const logoutUser = asyncHandler(async(req,res)=>{
     }
 })
 
-export {registerUser ,loginUser,logoutUser}
+
+// method for refereh the access token after expireation
+
+const refereshAccessToken = asyncHandler(async(req,res)=>{
+    try {
+        const incomingRefereshToken = req.cookies.refereshToken || req.body  // problem: req.body creates type problem in jwt
+            x
+        
+
+        // if referesh token is not present 
+
+        if (!incomingRefereshToken) {
+           throw new JsonWebTokenError("unauthorized request or token missing")
+        }
+
+        // decode the token
+
+        const decodedToken = await jwt.verify(incomingRefereshToken, process.env.REFFERESH_TOKEN_SECRET)
+  
+        
+       
+        const user = await User.findById(decodedToken._id)
+
+        if (!user) {
+          throw  new apiError(401,"invaid user")
+        }
+
+        // if user exist match the token in database
+
+        if (incomingRefereshToken !== user?.refereshToken) {
+          throw  new apiError(401,"expird or used referesh token")
+        }
+
+        // if token matched assign new tokens
+
+       const {accessToken,refereshToken}= await generateAccessAndRefereshToken(user?._id)
+
+       const options ={
+        httpOnly:true,
+        secure:true
+       }
+        
+    //    send the reponse to the user
+
+    res.status(200)
+    .cookie("accessToken",accessToken,options)
+    .cookie("refereshToken",refereshToken,options)
+    .json({
+        success:true,
+        data:{
+            accessToken,
+            refereshToken:refereshToken,
+        },
+        messase:"New access and referesh tokens generated successfully"
+
+    })
+  
+
+
+
+} catch (error) {
+       
+      throw  new apiError(500,
+            "error in refreshing the access token",
+
+            console.error(error)
+        )
+    }
+})
+
+export {registerUser ,loginUser,logoutUser,refereshAccessToken}
