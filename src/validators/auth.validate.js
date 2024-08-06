@@ -51,4 +51,24 @@ const userLoginValidator = () => {
     ];
   };
 
-  export { userRestrationValidation,userLoginValidator}
+  const updateccountDetailsValidator= ()=> {
+   return[ body("username")
+        .trim()
+        .optional()
+        .notEmpty()
+        .withMessage("username is required")
+        .isLength({min:7})
+        .withMessage("username must be at least 7 characters")
+        .matches(
+             /^(?=.*[a-z])(?=.*[0-9_.].)[a-z0-9_.]{7,30}$/
+        )
+        .withMessage("username must be coantain only lowercase, alphanumeric and special characters '_' and '.' "),
+
+        body("fullName")
+        .notEmpty().optional()
+        .withMessage("full name is required"),
+        
+];
+  };
+
+  export { userRestrationValidation,userLoginValidator,updateccountDetailsValidator}

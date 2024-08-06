@@ -185,7 +185,7 @@ const logoutUser = asyncHandler(async(req,res)=>{
        
         await User.findByIdAndUpdate(req.user._id,
             {
-                $set:{ refereshToken : undefined }
+                $unset:{refereshToken:1}
             },
             {
                 new:true
@@ -287,4 +287,92 @@ const refereshAccessToken = asyncHandler(async(req,res)=>{
     }
 })
 
-export {registerUser ,loginUser,logoutUser,refereshAccessToken}
+
+// method for updating the password
+
+const changeUserPassword = asyncHandler(async(req,res)=>{
+    const {oldPassword,newPassword} = req.body;
+
+    const user = await User.findById(req.user._id);
+    const isOldPaswordCorrect =await user.isPasswordCorrect(oldPassword
+    )
+
+    if(!isOldPaswordCorrect){
+        throw new apiError(400, "old password is incorrect")
+    }
+ 
+   const oldAndNewPasswordMatched = await bcrypt.compare(newPassword,user.password)
+
+   
+    if(oldAndNewPasswordMatched){
+        throw new apiError(401,
+            "new password and existing password cannot be same"
+        )
+    }
+
+    user.password = newPassword;
+    await user.save({validateBeforeSave:false})
+
+   return res.status(200).json(
+        new apiResponse(200,
+            {},
+            "user password changed successfully"
+        )
+    )
+
+})
+
+// mothod for changing account details
+
+const updateccountDetails = asyncHandler(async(req,res)=>{
+
+   try {
+     const {fullName,username} = req.body
+ 
+     if(!(username || fullName)){
+         throw new apiError(400,
+             "provide at least full name or username to update "
+         )
+     }
+ 
+     const user = await User.findByIdAndUpdate(
+         req.user._id,
+         {
+             $set:{ 
+                 fullName,
+                 username,
+             }
+                
+             
+         },
+         {new:true },
+         
+     ).select("-password")
+
+     console.log(user)
+     
+     return res.status(200).json(
+        new apiResponse(200,
+            user,
+            "user account details updated successfully"
+        )
+    )
+    
+   } catch (error) {
+
+    throw new apiError(500,
+        "error in updating account details",
+        console.error(error)
+    )
+    
+   }
+})
+
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    refereshAccessToken,
+    changeUserPassword,
+    updateccountDetails
+}
