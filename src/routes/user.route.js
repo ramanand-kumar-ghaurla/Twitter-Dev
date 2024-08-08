@@ -5,8 +5,12 @@ import { loginUser,
         logoutUser,
         refereshAccessToken,
         changeUserPassword,
-        updateccountDetails
+        updateccountDetails,
+        getUserProfile,
+        
     } from '../controllers/user.controller.js';
+
+
 import bodyParser from "body-parser";
 import {verifyJwt} from "../middlewares/verifyJWT.js"
 import {validate} from "../validators/validate.js"
@@ -17,6 +21,10 @@ import { userRestrationValidation,
 
 const router = Router()
 router.use(bodyParser.json());
+router.use(express.urlencoded({
+    limit:"20kb",
+    extended:true,
+}))
 
 // public routes
 
@@ -31,6 +39,8 @@ router.route("/change-password").post(verifyJwt,changeUserPassword)
 router.route("/update-account-details").post(verifyJwt,
     updateccountDetailsValidator(),validate,
     updateccountDetails)
+router.route("/c/:username").get(verifyJwt,getUserProfile);
+
 
 
 

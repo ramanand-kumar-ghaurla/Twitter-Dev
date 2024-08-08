@@ -2,18 +2,20 @@ import mongoose ,{ Schema }from "mongoose";
 
 const followSchema = new Schema(
     {
-        follow:{
+        follower:{
             type: Schema.Types.ObjectId,
             ref:"User",
-            required:true,
-        },
+            required:true
+           
+        },          // users who are following the owner profile
 
         following:{
             type:Schema.Types.ObjectId,
             ref:"User",
-            required:true,
+            required:true
+              // users whome are following by owner `
         }
-    },{timestampsz:true}
+    },{timestamps:true}
 );
 
 export const Follow = mongoose.model("Follow",followSchema)

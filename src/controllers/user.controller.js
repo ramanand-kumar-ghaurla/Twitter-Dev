@@ -368,11 +368,111 @@ const updateccountDetails = asyncHandler(async(req,res)=>{
    }
 })
 
+// method for get user profile
+
+const getUserProfile = asyncHandler(async(req,res)=>{
+
+    try {
+        const {username} = req.params;
+    
+        if(!username?.trim()){
+           throw new apiError(400,"username is missing")
+    
+        }
+    
+      const profile = await User.aggregate([
+            {
+                $match:{
+                    username:username?.toLowerCase()
+                }
+            },
+    
+            {
+                $lookup:{
+                    from:"follows",
+                    localField:"_id",
+                    foreignField:"following",
+                    as:"followers",
+                }
+            },
+    
+            {
+                $lookup:{
+                    from:"follows",
+                    localField:"_id",
+                    foreignField:"follower",
+                    as:"followingTo",
+                }
+            },
+    
+            {
+                $addFields:{
+                    followerCount:{
+                        $size:"$followers"
+                    },
+                    followingToCount:{
+                        $size: "$followingTo"
+                    },
+                    isFollowed:{
+                        $cond:{
+                            if :{
+                                $in:[req.user?._id,"$followers.follower"]
+                            },
+                            then:true,
+                            else:false,
+                        }
+                    }
+    
+                }
+            },
+    
+            {
+                $project:{
+                    
+                    username:1,
+                    fullName:1,
+                    posts:1,
+                    followerCount:1,
+                    followingToCount:1,
+                    isFollowed:1,
+                    createdAt:1
+    
+                }
+            }
+    
+            
+    
+    
+        ]);
+
+        if(!profile?.length){
+            throw new apiError(404,"user profile does not exists")
+        }
+    
+        res.status(200).json(
+            new apiResponse(200,
+                profile[0],
+                "user profile feched successfully",
+            )
+        )
+
+        console.log(profile)
+    } catch (error) {
+        throw new apiError(500,
+            "error in getting user profile",
+            console.log(error)
+        )
+    }
+
+
+})
+
 export {
     registerUser,
     loginUser,
     logoutUser,
     refereshAccessToken,
     changeUserPassword,
-    updateccountDetails
+    updateccountDetails,
+    getUserProfile
 }
