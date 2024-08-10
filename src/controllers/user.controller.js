@@ -407,6 +407,8 @@ const getUserProfile = asyncHandler(async(req,res)=>{
     
             {
                 $addFields:{
+                   
+
                     followerCount:{
                         $size:"$followers"
                     },
@@ -435,7 +437,8 @@ const getUserProfile = asyncHandler(async(req,res)=>{
                     followerCount:1,
                     followingToCount:1,
                     isFollowed:1,
-                    createdAt:1
+                    createdAt:1,
+                   
     
                 }
             }
@@ -467,6 +470,38 @@ const getUserProfile = asyncHandler(async(req,res)=>{
 
 })
 
+const deleteUser = asyncHandler(async(req,res)=>{
+
+    
+    try {
+
+        const user = req.user;
+
+    if (!user ) {
+        throw new apiError(400,
+            "no any user exists"
+        )
+        
+    }
+
+    await User.findByIdAndDelete(user._id)
+
+    res.status(200).json(
+        new apiResponse(200,
+            {},
+            "user account deleted successfully",
+        )
+    )
+        
+    } catch (error) {
+        throw new apiError(500,
+            "error in deleting the user account",
+            console.log(error)
+        )
+        
+    }
+})
+
 export {
     registerUser,
     loginUser,
@@ -474,5 +509,6 @@ export {
     refereshAccessToken,
     changeUserPassword,
     updateccountDetails,
-    getUserProfile
+    getUserProfile,
+    deleteUser
 }

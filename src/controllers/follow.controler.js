@@ -2,7 +2,7 @@ import {Follow} from "../models/follow.schema.js"
 import {asyncHandler} from "../utiles/asyncHandler.js"
 import{apiError} from "../utiles/ApiError.js"
 import {apiResponse} from "../utiles/apiResponse.js"
-import {getUserProfile} from "../controllers/user.controller.js"
+import {getUserProfile, updateccountDetails} from "../controllers/user.controller.js"
 import {User} from '../models/user.model.js'
 
 
@@ -20,7 +20,11 @@ const followUser = asyncHandler(async(req,res)=>{
      const currentUser = req.user
      
      const upcommingUser = await User.findOne(upcommingUsername)
-     
+
+     const isFollowed = await Follow.findOne({follower:currentUser._id,following:upcommingUser._id})
+     if(isFollowed){
+        throw new apiError(401,"you have already followed the user")
+     }
         
 
      if(!upcommingUser){
@@ -78,4 +82,79 @@ const unfollowUser  = asyncHandler(async(req,res)=>{
 })
 
 
-export {followUser,unfollowUser}
+const getFollower = asyncHandler(async(req,res)=>{
+   try {
+     // fetch the details
+ 
+   const  upcommingUsername = req.params
+    
+ 
+     if(!upcommingUsername){
+         throw new apiError(400,"user details missing")
+     }
+ 
+    const  upcommingUser = await User.findOne(upcommingUsername)
+
+    if(!upcommingUser){
+        throw new apiError(400,"user profile does not exists")
+    }
+ 
+    const userFollowers = await Follow.find({
+     following:upcommingUser._id,
+    }).populate().exec()
+
+    console.log(userFollowers)
+ 
+    res.status(200).json(
+     new apiResponse(200,
+         userFollowers,
+         "User follower fetched successfully",
+     )
+    )
+   } catch (error) {
+    throw new apiError(500,
+        "error in getting the user followers",
+        console.log(error)
+    )
+   }
+})
+
+
+const getFollowing = asyncHandler(async(req,res)=>{
+    try {
+      // fetch the details
+  
+    const  upcommingUsername = req.params
+     
+  
+      if(!upcommingUsername){
+          throw new apiError(400,"user details missing")
+      }
+  
+     const  upcommingUser = await User.findOne(upcommingUsername)
+
+     if(!upcommingUser){
+        throw new apiError(400,"user profile does not exists")
+    }
+  
+     const userFollowers = await Follow.find({
+      follower:upcommingUser._id
+     }).populate().exec()
+ 
+     console.log(userFollowers)
+  
+     res.status(200).json(
+      new apiResponse(200,
+          userFollowers,
+          "User following fetched successfully",
+      )
+     )
+    } catch (error) {
+     throw new apiError(500,
+         "error in getting the user following",
+         console.log(error)
+     )
+    }
+ })
+
+export {followUser,unfollowUser,getFollower,getFollowing}

@@ -7,6 +7,7 @@ import { loginUser,
         changeUserPassword,
         updateccountDetails,
         getUserProfile,
+        deleteUser
         
     } from '../controllers/user.controller.js';
 
@@ -40,6 +41,7 @@ router.route("/update-account-details").post(verifyJwt,
     updateccountDetailsValidator(),validate,
     updateccountDetails)
 router.route("/c/:username").get(verifyJwt,getUserProfile);
+router.route("/delete-account").post(verifyJwt,deleteUser)
 
 
 
