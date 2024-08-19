@@ -9,7 +9,7 @@ const likeSchema= new Schema(
             required:true,
         },
 
-        likable:{
+        likedToModel:{
             type:Schema.Types.ObjectId,
             required:true,
             refPath:'onModel',

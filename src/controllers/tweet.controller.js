@@ -1,9 +1,7 @@
 import {asyncHandler} from "../utiles/asyncHandler.js"
 import{apiError} from "../utiles/ApiError.js"
-import {User} from "../models/user.model.js"
 import {apiResponse} from "../utiles/apiResponse.js"
 import{createHashtag,bulkCreateHashtags,findByName} from "./hashtag.controller.js"
-import { Hashtag } from "../models/hashtag.model.js"
 import {Tweet} from "../models/tweet.model.js"
 
 const createTweet = asyncHandler(async(req,res)=>{

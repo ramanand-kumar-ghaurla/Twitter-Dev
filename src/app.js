@@ -32,6 +32,7 @@ app.use(cookieParser())
 import userRouter from "./routes/user.route.js";
 import followRouter from "./routes/follow.route.js"
 import tweetRoute from "./routes/tweet.route.js"
+import likeRoute from "./routes/like.route.js"
 
 
 // declaration of routes 
@@ -39,5 +40,6 @@ import tweetRoute from "./routes/tweet.route.js"
 app.use("/api/v1/user" , userRouter);
 app.use("/api/v1/follow-service",followRouter)
 app.use("/api/v1/tweets",tweetRoute)
+app.use("/api/v1/likes",likeRoute)
 
 export {app};
