@@ -38,6 +38,8 @@ const createTweet = asyncHandler(async(req,res)=>{
          postedBy:user._id,
          imageUrl
      })
+     user.posts.push(tweet._id)
+     await user.save()
  
      // extract hashtags 
 
@@ -88,6 +90,7 @@ const createTweet = asyncHandler(async(req,res)=>{
     
      const createdTags = await manageHashtags(content)
      
+    
  
     return res.status(200).json(
      new apiResponse(200,
@@ -109,4 +112,36 @@ const createTweet = asyncHandler(async(req,res)=>{
    
 })
 
-export{createTweet}
+const deleteTweet = asyncHandler(async(req,res)=>{
+
+    const user = req.user
+    const tweetId = req.params.ObjectId
+    console.log("tweet id =>",tweetId)
+
+    if(!tweetId){
+        throw new apiError(400, "tweet ID is missing")
+    }
+ 
+    // delete the tweet
+
+    await Tweet.findByIdAndDelete(tweetId)
+
+    // remove from the user array
+    
+    user.posts.pull(tweetId)
+    await user.save()
+
+  
+
+
+   
+    res.status(200).json(
+        new apiResponse(
+            200,
+            {},
+            "tweet deleted successfully"
+        )
+    )
+})
+
+export{createTweet,deleteTweet}
