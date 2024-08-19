@@ -2,7 +2,7 @@ import {Follow} from "../models/follow.schema.js"
 import {asyncHandler} from "../utiles/asyncHandler.js"
 import{apiError} from "../utiles/ApiError.js"
 import {apiResponse} from "../utiles/apiResponse.js"
-import {getUserProfile, updateccountDetails} from "../controllers/user.controller.js"
+
 import {User} from '../models/user.model.js'
 
 
@@ -36,7 +36,7 @@ const followUser = asyncHandler(async(req,res)=>{
             follower: currentUser._id,
             following:upcommingUser._id
      })
-        res.status(200).json(
+      return  res.status(200).json(
             new apiResponse(200,
                 followUser,
                 ` The user ${currentUser.username} successsfully followed the user profile of ${upcommingUser.username}`
@@ -74,7 +74,7 @@ const unfollowUser  = asyncHandler(async(req,res)=>{
 
    const unfollowUser = await Follow.findOneAndDelete({follower:currentUser._id,following:upcommingUser._id})
 
-   res.status(200).json(
+  return res.status(200).json(
     new apiResponse(200,{},
         `The user ${currentUser.username} successfully unfollow the user ${upcommingUser.username}'s profile`
     )
@@ -101,11 +101,11 @@ const getFollower = asyncHandler(async(req,res)=>{
  
     const userFollowers = await Follow.find({
      following:upcommingUser._id,
-    }).populate().exec()
+    }).select("username")
 
     console.log(userFollowers)
  
-    res.status(200).json(
+   return res.status(200).json(
      new apiResponse(200,
          userFollowers,
          "User follower fetched successfully",
@@ -139,11 +139,11 @@ const getFollowing = asyncHandler(async(req,res)=>{
   
      const userFollowers = await Follow.find({
       follower:upcommingUser._id
-     }).populate().exec()
+     }).select("username")
  
      console.log(userFollowers)
   
-     res.status(200).json(
+    return res.status(200).json(
       new apiResponse(200,
           userFollowers,
           "User following fetched successfully",

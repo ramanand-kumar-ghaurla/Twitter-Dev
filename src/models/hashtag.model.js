@@ -8,15 +8,13 @@ const hashtagSchema= new Schema(
             required:true,
         },
 
-        tweets:[
-            {
-                type:Schema.Types.ObjectId,
-                ref:"Tweet"
-            }
-        ]
+        tweets:[ {
+             type:Schema.Types.ObjectId,
+            ref:"User"
+        }]
         
 
     },{timestamps:true}
 )
 
-export const Hashtag=mongoose.model("Hashtag",hashtagSchema);
+export const Hashtag = mongoose.model("Hashtag",hashtagSchema);

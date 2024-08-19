@@ -31,11 +31,13 @@ app.use(cookieParser())
 // import the routes
 import userRouter from "./routes/user.route.js";
 import followRouter from "./routes/follow.route.js"
+import tweetRoute from "./routes/tweet.route.js"
 
 
 // declaration of routes 
 
 app.use("/api/v1/user" , userRouter);
 app.use("/api/v1/follow-service",followRouter)
+app.use("/api/v1/tweets",tweetRoute)
 
 export {app};

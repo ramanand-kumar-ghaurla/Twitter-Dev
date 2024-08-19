@@ -9,7 +9,7 @@ const tweetSchema=new Schema(
             trim:true,
         },
 
-        image:{
+        imageUrl:{
             type:String,
         
         },
@@ -31,12 +31,7 @@ const tweetSchema=new Schema(
             ref:"Comment"
             }
         ],
-        hashTags:[
-            {
-            type:Schema.Types.ObjectId,
-            ref:"Hashtag"
-            }
-        ]
+        
 
     },{timestamps:true}
 )
