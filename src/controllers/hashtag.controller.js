@@ -95,7 +95,7 @@ const tweetsOfHashtag = async(req,res)=>{
         res.status(200).json(
             new apiResponse(200,
                 tweets[0],
-               ` tweets related to ${title} is   feched successfully`,
+               ` tweets related to " ${title} " is   feched successfully`,
             )
         )
         console.log(tweets)
@@ -104,7 +104,9 @@ const tweetsOfHashtag = async(req,res)=>{
    
     } catch (error) {
         
-        throw new apiError(500,"error in finding the tweets of hashtag")
+        throw new apiError(500,"error in finding the tweets of hashtag",
+            console.log(error)
+        )
     }
 }
 

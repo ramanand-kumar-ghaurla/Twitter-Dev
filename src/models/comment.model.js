@@ -3,13 +3,18 @@ import mongoose,{Schema} from "mongoose";
 
 const commentSchema= new Schema(
     {
+        content:{
+            type:String,
+            required:true
+        },
+
         onModel:{
             type:String,
             enum:["Tweet","Comment"],
             required:true,
         },
 
-        commentable:{
+        commentedModel:{
             type:Schema.Types.ObjectId,
             required:true,
             refPath:'onModel',
@@ -19,7 +24,13 @@ const commentSchema= new Schema(
             type:Schema.Types.ObjectId,
             ref:"User",
             required:true
-        }
+        },
+        comments:[
+            {
+            type:Schema.Types.ObjectId,
+            ref:"Comment"
+            }
+    ]
 
     },{timestamps:true}
 )

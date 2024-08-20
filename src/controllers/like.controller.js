@@ -13,7 +13,7 @@ const findModel = async (modelType,modelId)=>{
          var likedToModel = await Tweet.findById(modelId).populate({ path:"likes"})
         
     }else if(modelType ==="Comment"){
-       // var likedToModel = await Comment.findById(modelId)
+        var likedToModel = await Comment.findById(modelId)
     }
      else {
         throw new apiError(400, "unknown model type")
@@ -37,13 +37,13 @@ const toggleLike = asyncHandler(async(req,res)=>{
         const user = req.user
         const modelType  = req.query.modelType
         const modelId = req.query.modelId
-        console.log(modelId,modelType)
+        
 
         // step 2 
 
         const modelToLike= await findModel(modelType,modelId)
 
-        console.log("model to like =>",modelToLike)
+        
         // step 3
 
         const existLike = await Like.findOne({
