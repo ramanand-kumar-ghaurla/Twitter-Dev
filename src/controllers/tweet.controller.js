@@ -211,6 +211,7 @@ const fetchTweet = asyncHandler(async(req,res)=>{
                 pipeline:[
                     {
                         $project:{
+                            _id:0,
                             username:1,
                             fullName:1,
                             avtar:1
