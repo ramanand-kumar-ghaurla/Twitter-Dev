@@ -31,6 +31,12 @@ const tweetSchema=new Schema(
             ref:"Comment"
             }
         ],
+        views:[
+            {
+                type:Schema.Types.ObjectId,
+                ref:"Views"
+            }
+        ]
         
 
     },{timestamps:true}

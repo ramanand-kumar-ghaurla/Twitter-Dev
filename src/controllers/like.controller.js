@@ -3,6 +3,7 @@ import{apiError} from "../utiles/ApiError.js"
 import {apiResponse} from "../utiles/apiResponse.js"
 import {Like} from "../models/like.model.js"
 import {Tweet} from "../models/tweet.model.js"
+import { Comment } from "../models/comment.model.js"
 
 const findModel = async (modelType,modelId)=>{
     if(!modelType && !modelId){

@@ -30,9 +30,15 @@ const commentSchema= new Schema(
             type:Schema.Types.ObjectId,
             ref:"Comment"
             }
+    ],
+    likes:[
+        {
+            type:Schema.Types.ObjectId,
+            ref:"Like"
+        }
     ]
 
     },{timestamps:true}
 )
 
-export const Comment=mongoose.model("Comment",commentSchema);
+export const Comment = mongoose.model("Comment",commentSchema);
