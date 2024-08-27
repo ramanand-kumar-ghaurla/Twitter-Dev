@@ -103,10 +103,15 @@ const tweetsOfHashtag = async(req,res)=>{
    
    
     } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            success:false,
+            message:"error in finding hashtags",
+            
+        })
+       
         
-        throw new apiError(500,"error in finding the tweets of hashtag",
-            console.log(error)
-        )
+       
     }
 }
 

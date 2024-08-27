@@ -25,6 +25,8 @@ const userRestrationValidation = () =>{
          body("password")
          .trim()
          .notEmpty()
+         .isLowercase()
+         .withMessage("uername must be in lowercase")
          .withMessage("password is required")
          .isLength({min:8},{max:20})
          .withMessage("password must be at least 8 characters")
@@ -36,7 +38,12 @@ const userRestrationValidation = () =>{
 
          body("fullName")
          .notEmpty()
-         .withMessage("full name is required"),
+         .withMessage("full name is required")
+         .isString()
+         .withMessage("full name must be a string")
+         .isLength({max:25})
+         .withMessage("full name must be at most 25 characters")
+        ,
 
 
 
@@ -46,7 +53,7 @@ const userRestrationValidation = () =>{
 const userLoginValidator = () => {
     return [
       body("email").optional().isEmail().withMessage("Email is invalid"),
-      body("username").optional(),
+      body("username").optional().isLowercase().withMessage("username must be in lower case"),
       body("password").notEmpty().withMessage("Password is required"),
     ];
   };
@@ -65,8 +72,14 @@ const userLoginValidator = () => {
         .withMessage("username must be coantain only lowercase, alphanumeric and special characters '_' and '.' "),
 
         body("fullName")
-        .notEmpty().optional()
-        .withMessage("full name is required"),
+        .notEmpty()
+        .withMessage("full name is required")
+        .isString()
+        .withMessage("full name must be a string")
+        .optional()
+        .isLength({max:25})
+        .withMessage("full name must be at most 25 characters")
+       
         
 ];
   };

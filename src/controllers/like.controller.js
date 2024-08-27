@@ -85,7 +85,10 @@ const toggleLike = asyncHandler(async(req,res)=>{
         if (isLiked === true) {
             var response= res.status(200).json(
                 new apiResponse(200,
-                    newLike,
+                    {
+                        newLike:newLike,
+                        isLiked:true
+                    },
                     `the user ${user.username} successfully liked the ${modelType}`
                 )
             )
@@ -93,7 +96,9 @@ const toggleLike = asyncHandler(async(req,res)=>{
             
             var response= res.status(200).json(
                 new apiResponse(200,
-                    {},
+                    {
+                        isLiked:false
+                    },
                     `the user ${user.username} successfully unliked the ${modelType}`
                 )
             )

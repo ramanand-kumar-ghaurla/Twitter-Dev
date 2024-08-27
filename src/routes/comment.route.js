@@ -5,12 +5,12 @@ const router = Router()
 
 // import controllers
 
-import { createComment } from "../controllers/comment.controller.js";
+import { createComment,getCommentsOfTweet } from "../controllers/comment.controller.js";
 
 // define the routes
 
 router.route("/create-comment").post(verifyJwt,createComment)
-
+router.route("/tweet-comments").get(verifyJwt,getCommentsOfTweet)
 
 
 export default router

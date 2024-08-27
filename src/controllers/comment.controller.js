@@ -3,6 +3,8 @@ import{apiError} from "../utiles/ApiError.js"
 import {apiResponse} from "../utiles/apiResponse.js"
 import {Comment} from "../models/comment.model.js"
 import {Tweet} from "../models/tweet.model.js"
+import{User} from "../models/user.model.js"
+import mongoose from "mongoose"
 
 const findModel = async (modelType,modelId)=>{
     if(!modelType && !modelId){
@@ -49,6 +51,11 @@ try {
             // step 2
             const modelToComment= await findModel(modelType,modelId)
     
+            if(!modelToComment){
+                throw new apiError(404,
+                    `no ${modelType} is available corresponding to this mdoel ID`
+                )
+            }
             console.log(modelType)
             console.log("model to comment =>",modelToComment)
     
@@ -87,4 +94,127 @@ try {
 }
 })
 
-export{createComment}
+const getCommentsOfTweet = asyncHandler(async(req,res)=>{
+    try {
+        /**
+         * fetch the details
+         * aggregate the tweet and comment model
+         * aply sub pipeline on comment model
+         * add like count ,nested comment count and auther 
+         * 
+         */
+
+        const user= req.user
+        const tweetId= req.query.tweetId
+        console.log(tweetId)
+
+        const commentsOfTweets = await Tweet.aggregate([
+            {
+                $match:{
+                    _id: new mongoose.Types.ObjectId(`${tweetId}`),
+                    
+                },
+                
+            },
+            {
+                $project:{
+                    comments:1,
+                    _id:0
+                }
+            },
+            
+
+            {
+                $lookup:{
+            from:"comments",
+            localField:"comments",
+            foreignField:"_id",
+            as:"comments",
+            pipeline:[
+                {
+                    $lookup:{
+                        from:"likes",
+                        localField:"likes",
+                        foreignField:"_id",
+                        as:"likes"
+                    }
+                },
+                {
+                    $lookup:{
+                        from:"users",
+                        localField:"commentedBy",
+                        foreignField:"_id",
+                        as:"commentedBy",
+                        pipeline:[
+                            {
+                                $project:{
+                                    _id:0,
+                                    username:1,
+                                    fullName:1,
+                                    
+                                        }
+                            }
+                        ]
+                    }
+                },
+                {
+                    $lookup:{
+                        from:"comments",
+                        localField:"comments",
+                        foreignField:"_id",
+                        as:"replies",
+
+                    }
+                },
+                {
+                    $addFields:{
+                        likeCount:{
+                            $size:"$likes"
+                                 },
+
+                            replyCount:{
+                                $size:"$replies"
+                            },
+                            commentedBy:{
+                                $first:"$commentedBy"
+                            }
+                    }
+                },
+                {
+                    $project:{
+                        content:1,
+                        commentedBy:1,
+                        likeCount:1,
+                        replyCount:1
+                    }
+                }
+                    
+                    ]
+                    
+                }
+            },
+           
+        ])
+
+        if(!commentsOfTweets.length){
+            throw new apiError(404, "no tweet avalable ")
+        }
+
+        res.status(200).json(
+            new apiResponse(200,
+                commentsOfTweets[0],
+                "all comments of tweet is fetched successfully"
+            )
+         )
+
+
+
+    } catch (error) {
+      
+        throw new apiError(500, "error in getting comments of tweet",
+            console.log(error)
+        )
+    }
+})
+
+export{createComment,getCommentsOfTweet}

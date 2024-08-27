@@ -71,7 +71,7 @@ const registerUser = asyncHandler( async (req,res)=>{
  
  
   const existedUser = await User.findOne({
-     $or:[{username},{password}]
+     $or:[{username},{password},]
    
  })
  
@@ -138,6 +138,7 @@ if(!(username || email)){
  const user = await User.findOne({
     $or:[{username},{email}]
  })
+
 
  if(!user){
     throw new apiError(400,"User does not exists")

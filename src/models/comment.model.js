@@ -30,13 +30,13 @@ const commentSchema= new Schema(
             type:Schema.Types.ObjectId,
             ref:"Comment"
             }
-    ],
-    likes:[
+                ],
+        likes:[
         {
             type:Schema.Types.ObjectId,
             ref:"Like"
         }
-    ]
+                ]
 
     },{timestamps:true}
 )

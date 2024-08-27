@@ -31,7 +31,8 @@ const createTweet = asyncHandler(async(req,res)=>{
  
  
      }
- 
+   
+     
      // create tweet
  
      const tweet = await Tweet.create({
@@ -46,8 +47,16 @@ const createTweet = asyncHandler(async(req,res)=>{
 
      const manageHashtags = async(content)=>{
 
+        
         try {
-            let tags = content.match(/#[a-zA-Z0-9_]+/g) // regex for matching hashtags
+            
+            let tags = content.match(/#[0-9a-zA-Z_]+/g) // regex for matching hashtags
+            if(!tags){
+                var  msg="no tags are available in tweet"
+                return msg
+            }
+            
+            
             const extractedTags = tags.map((tag)=>tag.substring(1));
             console.log( "extracte tags =>",extractedTags)
         
@@ -89,10 +98,9 @@ const createTweet = asyncHandler(async(req,res)=>{
         };
      }
     
-     const createdTags = await manageHashtags(content)
+      await manageHashtags(content)
      
     
- 
     return res.status(200).json(
      new apiResponse(200,
          {
