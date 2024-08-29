@@ -405,6 +405,28 @@ const getUserProfile = asyncHandler(async(req,res)=>{
                     as:"followingTo",
                 }
             },
+
+           {
+                $lookup:{
+                    from:"tweets",
+                    localField:"posts",
+                    foreignField:"_id",
+                    as:"posts",
+                    pipeline:[
+                       
+                       {
+                            $project:{
+                                content:1,
+                                likes:{$size:"$likes"},
+                                comments:{$size:"$comments"},
+                                views:{$size:"$views"},
+                                _id:0
+                            }
+                        }
+                    ]
+                }
+            },
+
     
             {
                 $addFields:{
@@ -415,6 +437,9 @@ const getUserProfile = asyncHandler(async(req,res)=>{
                     },
                     followingToCount:{
                         $size: "$followingTo"
+                    },
+                    postCount:{
+                        $size:"$posts"
                     },
                     isFollowed:{
                         $cond:{
@@ -435,6 +460,7 @@ const getUserProfile = asyncHandler(async(req,res)=>{
                     username:1,
                     fullName:1,
                     posts:1,
+                    postCount:1,
                     followerCount:1,
                     followingToCount:1,
                     isFollowed:1,

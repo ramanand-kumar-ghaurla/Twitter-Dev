@@ -108,6 +108,10 @@ const getCommentsOfTweet = asyncHandler(async(req,res)=>{
         const tweetId= req.query.tweetId
         console.log(tweetId)
 
+        if(!tweetId){
+            throw new apiError(400,"tweet id is mendtory")
+        }
+
         const commentsOfTweets = await Tweet.aggregate([
             {
                 $match:{
@@ -131,14 +135,7 @@ const getCommentsOfTweet = asyncHandler(async(req,res)=>{
             foreignField:"_id",
             as:"comments",
             pipeline:[
-                {
-                    $lookup:{
-                        from:"likes",
-                        localField:"likes",
-                        foreignField:"_id",
-                        as:"likes"
-                    }
-                },
+               
                 {
                     $lookup:{
                         from:"users",
@@ -195,17 +192,20 @@ const getCommentsOfTweet = asyncHandler(async(req,res)=>{
             },
            
         ])
-
         if(!commentsOfTweets.length){
-            throw new apiError(404, "no tweet avalable ")
+            throw new apiError(404, "no tweet")
         }
 
-        res.status(200).json(
-            new apiResponse(200,
-                commentsOfTweets[0],
-                "all comments of tweet is fetched successfully"
-            )
-         )
+        
+            res.status(200).json(
+                new apiResponse(200,
+                    commentsOfTweets[0],
+                    "all comments of tweet is fetched successfully"
+                )
+             )
+        
+
+        
 
 
 
@@ -217,4 +217,111 @@ const getCommentsOfTweet = asyncHandler(async(req,res)=>{
     }
 })
 
-export{createComment,getCommentsOfTweet}
+const getCommentOfComment = asyncHandler(async(req,res)=>{
+
+    try {
+        const commentId= req.query.commentId
+            console.log(commentId)
+    
+            const commentsOfComment = await Comment.aggregate([
+                {
+                    $match:{
+                        _id: new mongoose.Types.ObjectId(`${commentId}`),
+                        
+                    },
+                    
+                },
+                {
+                    $project:{
+                        content:1,
+                        comments:1,
+                        _id:0
+                    }
+                },
+                
+    
+                {
+                    $lookup:{
+                        from:"comments",
+                        localField:"comments",
+                        foreignField:"_id",
+                        as:"comments",
+                        pipeline:[
+                   
+                    {
+                        $lookup:{
+                            from:"users",
+                            localField:"commentedBy",
+                            foreignField:"_id",
+                            as:"commentedBy",
+                            pipeline:[
+                                {
+                                    $project:{
+                                        _id:0,
+                                        username:1,
+                                        fullName:1,
+                                        
+                                            }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $lookup:{
+                            from:"comments",
+                            localField:"comments",
+                            foreignField:"_id",
+                            as:"replies",
+    
+                        }
+                    },
+                    {
+                        $addFields:{
+                            likeCount:{
+                                $size:"$likes"
+                                     },
+    
+                                replyCount:{
+                                    $size:"$replies"
+                                },
+                                commentedBy:{
+                                    $first:"$commentedBy"
+                                }
+                        }
+                    },
+                    {
+                        $project:{
+                            content:1,
+                            commentedBy:1,
+                            likeCount:1,
+                            replyCount:1
+                        }
+                    }
+                        
+                        ]
+                        
+                    }
+                },
+               
+            ])
+            console.log(commentsOfComment)
+            if(!commentsOfComment.length){
+                throw new apiError(404, "no comment available corressponding to this commentId")
+            }
+    
+            
+                res.status(200).json(
+                    new apiResponse(200,
+                        commentsOfComment[0],
+                        "all replies of comment is fetched successfully"
+                    )
+                 )
+    } catch (error) {
+        throw new apiError(500,"error in fetching replies of comment",
+            console.log(error)
+        )
+    }
+
+})
+
+export{createComment,getCommentsOfTweet,getCommentOfComment}

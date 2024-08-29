@@ -142,6 +142,8 @@ const deleteTweet = asyncHandler(async(req,res)=>{
 
     // todo: remove the deleted tweet from the hashtags array
 
+
+
   
 
 
@@ -183,33 +185,7 @@ const fetchTweet = asyncHandler(async(req,res)=>{
                 _id: new mongoose.Types.ObjectId(`${tweetId}`)
             }
         },
-        {
-            $lookup:{
-                from:"likes",
-                localField:"likes",
-                foreignField:"_id",
-                as:"likes"
-            }
-        },
-        // console.log("first lookup"),
-       {
-        $lookup:{
-            from:"comments",
-            localField:"comments",
-            foreignField:"_id",
-            as:"comments"
-        }
-       },
-        // console.log("second lookup"),
-        {
-            $lookup:{
-                from:"views",
-                localField:"views",
-                foreignField:"_id",
-                as:"views"
-            }
-        },
-        // console.log("third lookup"),
+  
         {
             $lookup:{
                 from:"users",

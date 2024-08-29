@@ -35,7 +35,7 @@ const userRestrationValidation = () =>{
 /^\S*(?=\S{8,20})(?=\S*\d)(?=\S*[A-Z])(?=\S*[a-z])(?=\S*[!@#$%^&*? ])\S*$/
          )
          .withMessage("password must be containing one uppercase, lowercase and special symbol"),
-
+         
          body("fullName")
          .notEmpty()
          .withMessage("full name is required")
