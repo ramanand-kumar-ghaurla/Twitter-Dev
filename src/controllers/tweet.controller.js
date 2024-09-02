@@ -55,6 +55,7 @@ const createTweet = asyncHandler(async(req,res)=>{
                 var  msg="no tags are available in tweet"
                 return msg
             }
+           
             
             
             const extractedTags = tags.map((tag)=>tag.substring(1));
@@ -185,6 +186,8 @@ const fetchTweet = asyncHandler(async(req,res)=>{
                 _id: new mongoose.Types.ObjectId(`${tweetId}`)
             }
         },
+
+        
   
         {
             $lookup:{
@@ -271,9 +274,11 @@ const fetchTweet = asyncHandler(async(req,res)=>{
         )
      }
 
+     
+
      res.status(200).json(
         new apiResponse(200,
-            tweet[0],
+            tweet,
             "tweet fetched successfully"
         )
      )

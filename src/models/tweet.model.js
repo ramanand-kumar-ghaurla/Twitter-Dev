@@ -1,4 +1,5 @@
 import mongoose,{Schema} from "mongoose";
+import { paginate } from "mongoose-paginate-v2";
 
 const tweetSchema=new Schema(
     {
@@ -42,4 +43,6 @@ const tweetSchema=new Schema(
     },{timestamps:true}
 )
 
+
 export const Tweet = mongoose.model("Tweet",tweetSchema);
+

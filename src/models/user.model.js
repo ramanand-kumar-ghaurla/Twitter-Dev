@@ -35,6 +35,10 @@ const userSchema = new Schema({
         
 
     },
+    coverImage:{
+        type:String
+    },
+    
     refereshToken:{
         type:String,
     },

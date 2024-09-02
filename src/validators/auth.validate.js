@@ -13,6 +13,8 @@ const userRestrationValidation = () =>{
         body("username")
         .trim()
         .notEmpty()
+        .isLowercase()
+        .withMessage("username must be in lower case")
         .withMessage("username is required")
         .isLength({min:7})
         .withMessage("username must be at least 7 characters")
@@ -25,8 +27,6 @@ const userRestrationValidation = () =>{
          body("password")
          .trim()
          .notEmpty()
-         .isLowercase()
-         .withMessage("uername must be in lowercase")
          .withMessage("password is required")
          .isLength({min:8},{max:20})
          .withMessage("password must be at least 8 characters")
@@ -43,6 +43,7 @@ const userRestrationValidation = () =>{
          .withMessage("full name must be a string")
          .isLength({max:25})
          .withMessage("full name must be at most 25 characters")
+         
         ,
 
 

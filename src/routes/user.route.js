@@ -14,6 +14,7 @@ import { loginUser,
 
 import bodyParser from "body-parser";
 import {verifyJwt} from "../middlewares/verifyJWT.js"
+import { upload } from "../middlewares/multer,middleware.js";
 import {validate} from "../validators/validate.js"
 import { userRestrationValidation,
          userLoginValidator,
@@ -29,7 +30,18 @@ router.use(express.urlencoded({
 
 // public routes
 
-router.route("/register").post( userRestrationValidation(),validate,registerUser)
+router.route("/register").post(
+
+    upload.fields([
+        {name:"avtar",maxCount:1},
+        {name:"coverImage",maxCount:1}
+                                        ]),
+    userRestrationValidation(),
+    validate,
+    registerUser)
+
+
+
 router.route("/login").post(userLoginValidator(),validate,loginUser)
 
 // secured routes

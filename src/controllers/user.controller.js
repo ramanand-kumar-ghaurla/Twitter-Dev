@@ -8,7 +8,8 @@ import dotenv from 'dotenv'
 import mongoose from "mongoose";
 dotenv.config();
 import JsonWebTokenError from "jsonwebtoken/lib/JsonWebTokenError.js";
-
+import { uploadOnCloudinary } from "../utiles/cloudinary.js";
+import fs from "fs"
 
 // function for generating referesh and access token
 
@@ -39,6 +40,10 @@ const generateAccessAndRefereshToken= async (userId)=>{
 }
 
 
+// method for avtar validation
+
+
+
 const registerUser = asyncHandler( async (req,res)=>{
 
    try {    
@@ -46,6 +51,7 @@ const registerUser = asyncHandler( async (req,res)=>{
  
      const { username,email,fullName,password } = req.body
      
+     console.log(req.body)
  
      // validation on the all fields
  
@@ -56,29 +62,114 @@ const registerUser = asyncHandler( async (req,res)=>{
          )
  
      }
+
+     if(req.files && Array.isArray(req.files.avtar) && req.files.avtar.length >0){
+        var avtarPath = req.files.avtar[0]?.path
+     }
+    
+     console.log(avtarPath,"UPPER PATH")
+     if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length >0){
+        var coverImagePath = req.files.coverImage[0]?.path
+        console.log(coverImagePath,"UPPER COVER")
+     }
  
-     // if (
-     //     [username,email,fullName,password].some((field)=>{
-     //         field === ""
-     //     })
-     // ){
-     //     new apiError(
-     //         400,
-     //         "all fields are required",
- 
-     //     )
-     // }
- 
+    
  
   const existedUser = await User.findOne({
-     $or:[{username},{password},]
+     $or:[{username},{email},]
    
  })
+
+
+ if(existedUser){
+    fs.unlinkSync(avtarPath)
+    fs.unlinkSync(coverImagePath)
+    throw new apiError(400, "user with this email and username  is already exists")
+
+ }
+
+
  
  
-  if(existedUser){
-     throw new apiError(400, "user with this email and username  is already exists")
-  }
+
+ 
+ 
+ const getPathAndMediaType = (data)=>{
+    const path =  data.path
+    const mimetype = data?.mimetype
+    
+    
+    if(!path && !mimetype){
+                throw new apiError(401, "avtar path and media type is required")
+            }
+            
+                const mediaType = ["image/jpj","image/png","image/jpeg"]
+                
+                // condition for media type
+                if(!mediaType.includes(mimetype)){
+                    throw new apiError(400, "media type not supported")
+                }
+             
+                // condition for cloudinary folder
+                 
+                if (data === avtar) {
+                   var folderName = "/Twitter-Project/user/avtar"
+                } else if(data===coverImage){
+                    var folderName =  "/Twitter-Project/user/cover" 
+                }else{
+                    return
+                }
+
+                // condition for local path
+
+                if(data === coverImage){
+                    var coverImageLocalPath = path
+                }else if(data === avtar){
+                    var avtarLocalPath = path
+                }else{
+                    return
+                }
+            
+              
+                return {avtarLocalPath,coverImageLocalPath, folderName}
+                       
+    
+ }
+
+ console.log(req.files,"req files")
+ let uploadedAvtar
+
+//  if avtar image is available
+
+ if(req.files && Array.isArray(req.files.avtar) && req.files.avtar.length >0){
+    var avtar = req.files.avtar[0]
+    console.log(avtar,"avtar")
+    var {avtarLocalPath,folderName} = getPathAndMediaType(avtar)
+    uploadedAvtar = await uploadOnCloudinary(avtarLocalPath,folderName)
+    
+ }
+
+//  if cover image is availble
+
+let uploadedCoverImage
+
+if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length >0){
+    var coverImage = req.files.coverImage[0]
+    console.log(coverImage,"cover image")
+    var {coverImageLocalPath,folderName} = getPathAndMediaType(coverImage)
+
+    uploadedCoverImage = await uploadOnCloudinary(coverImageLocalPath,folderName)
+    
+    
+ }
+
+ 
+
+    
+    
+ 
+ 
+  
  
  //  create the user 
  
@@ -86,7 +177,9 @@ const registerUser = asyncHandler( async (req,res)=>{
      username,
      email,
      fullName,
-     password
+     password,
+     avtar:uploadedAvtar?.url || "",
+     coverImage:uploadedCoverImage?.url ||""
  })
  
  // check if the user is created or not
@@ -375,6 +468,9 @@ const getUserProfile = asyncHandler(async(req,res)=>{
 
     try {
         const {username} = req.params;
+        const limit = Number(3)
+        const page = Number(req.query.pagen|| 1)
+        const skip = (page-1)*limit
     
         if(!username?.trim()){
            throw new apiError(400,"username is missing")
@@ -413,13 +509,24 @@ const getUserProfile = asyncHandler(async(req,res)=>{
                     foreignField:"_id",
                     as:"posts",
                     pipeline:[
+
+                        {
+                            $sort: {
+                              
+                              createdAt: -1,
+                            }
+                          },
+                         
                        
                        {
                             $project:{
                                 content:1,
+                                
                                 likes:{$size:"$likes"},
                                 comments:{$size:"$comments"},
                                 views:{$size:"$views"},
+                                createdAt:1,
+                               
                                 _id:0
                             }
                         }
@@ -453,6 +560,9 @@ const getUserProfile = asyncHandler(async(req,res)=>{
     
                 }
             },
+           
+            
+               
     
             {
                 $project:{
@@ -466,6 +576,7 @@ const getUserProfile = asyncHandler(async(req,res)=>{
                     isFollowed:1,
                     createdAt:1,
                    
+                   
     
                 }
             }
@@ -475,6 +586,7 @@ const getUserProfile = asyncHandler(async(req,res)=>{
     
         ]);
 
+        
         if(!profile?.length){
             throw new apiError(404,"user profile does not exists")
         }
