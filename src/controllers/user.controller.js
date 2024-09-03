@@ -9,7 +9,7 @@ import mongoose from "mongoose";
 dotenv.config();
 import JsonWebTokenError from "jsonwebtoken/lib/JsonWebTokenError.js";
 import { uploadOnCloudinary } from "../utiles/cloudinary.js";
-import fs from "fs"
+import fs, { unlink } from "fs"
 
 // function for generating referesh and access token
 
@@ -50,8 +50,9 @@ const registerUser = asyncHandler( async (req,res)=>{
      // find the details from req
  
      const { username,email,fullName,password } = req.body
+    
      
-     console.log(req.body)
+    
  
      // validation on the all fields
  
@@ -63,14 +64,15 @@ const registerUser = asyncHandler( async (req,res)=>{
  
      }
 
+
      if(req.files && Array.isArray(req.files.avtar) && req.files.avtar.length >0){
         var avtarPath = req.files.avtar[0]?.path
      }
     
-     console.log(avtarPath,"UPPER PATH")
+    
      if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length >0){
         var coverImagePath = req.files.coverImage[0]?.path
-        console.log(coverImagePath,"UPPER COVER")
+       
      }
  
     
@@ -82,8 +84,7 @@ const registerUser = asyncHandler( async (req,res)=>{
 
 
  if(existedUser){
-    fs.unlinkSync(avtarPath)
-    fs.unlinkSync(coverImagePath)
+   
     throw new apiError(400, "user with this email and username  is already exists")
 
  }
@@ -91,18 +92,15 @@ const registerUser = asyncHandler( async (req,res)=>{
 
  
  
-
- 
- 
  const getPathAndMediaType = (data)=>{
-    const path =  data.path
+    const path =  data?.path
     const mimetype = data?.mimetype
     
     
     if(!path && !mimetype){
                 throw new apiError(401, "avtar path and media type is required")
             }
-            
+           
                 const mediaType = ["image/jpj","image/png","image/jpeg"]
                 
                 // condition for media type
@@ -114,7 +112,7 @@ const registerUser = asyncHandler( async (req,res)=>{
                  
                 if (data === avtar) {
                    var folderName = "/Twitter-Project/user/avtar"
-                } else if(data===coverImage){
+                } else if(data=== coverImage){
                     var folderName =  "/Twitter-Project/user/cover" 
                 }else{
                     return
@@ -135,6 +133,9 @@ const registerUser = asyncHandler( async (req,res)=>{
                        
     
  }
+ 
+ 
+
 
  console.log(req.files,"req files")
  let uploadedAvtar
@@ -144,7 +145,7 @@ const registerUser = asyncHandler( async (req,res)=>{
  if(req.files && Array.isArray(req.files.avtar) && req.files.avtar.length >0){
     var avtar = req.files.avtar[0]
     console.log(avtar,"avtar")
-    var {avtarLocalPath,folderName} = getPathAndMediaType(avtar)
+    let {avtarLocalPath,folderName} = getPathAndMediaType(avtar)
     uploadedAvtar = await uploadOnCloudinary(avtarLocalPath,folderName)
     
  }
@@ -156,7 +157,7 @@ let uploadedCoverImage
 if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length >0){
     var coverImage = req.files.coverImage[0]
     console.log(coverImage,"cover image")
-    var {coverImageLocalPath,folderName} = getPathAndMediaType(coverImage)
+    let {coverImageLocalPath,folderName} = getPathAndMediaType(coverImage)
 
     uploadedCoverImage = await uploadOnCloudinary(coverImageLocalPath,folderName)
     
@@ -203,6 +204,21 @@ if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.leng
  
  
    } catch (error) {
+    let isAvtar = fs.existsSync(avtarPath)
+    let isCover = fs.existsSync(coverImagePath)
+
+    if(isAvtar){
+        fs.unlinkSync(avtarPath)
+
+    }
+
+    if(isCover){
+        fs.unlinkSync(coverImagePath)
+    }
+
+
+
+   
     throw new apiError(
         500,
         "error in registring user",
