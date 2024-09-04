@@ -168,38 +168,54 @@ const createTweet = asyncHandler(async(req,res)=>{
 
 const deleteTweet = asyncHandler(async(req,res)=>{
 
-    const user = req.user
-    const tweetId = req.params.ObjectId
-    console.log("tweet id =>",tweetId)
-
-    if(!tweetId){
-        throw new apiError(400, "tweet ID is missing")
-    }
+   try {
+     const user = req.user
+     const tweetId = req.params.ObjectId
+     console.log("tweet id =>",tweetId)
  
-    // delete the tweet
-
-    await Tweet.findByIdAndDelete(tweetId)
-
-    // remove from the user array
-    
-    user.posts.pull(tweetId)
-    await user.save()
-
-    // todo: remove the deleted tweet from the hashtags array
-
-
-
+     if(!tweetId){
+         throw new apiError(400, "tweet ID is missing")
+     }
+ 
+   const tweet=  await Tweet.findById(tweetId).select("media")
+     
+     const files = tweet.media
+     console.log(files,"fles")
+     let publicIds
+     if(files){
+         publicIds = files.map((file)=> file.mediaPublicId)
+     }
+ 
+ 
+     
+     // delete the cloudinary image if available
+ 
+     await deleteManyImageOnCloudinary(publicIds) //delete only images
   
-
-
-   
-    res.status(200).json(
-        new apiResponse(
-            200,
-            {},
-            "tweet deleted successfully"
-        )
+     // delete the tweet
+ 
+      await Tweet.findByIdAndDelete(tweetId)
+ 
+     // // remove from the user array
+     
+     user.posts.pull(tweetId)
+     await user.save()
+ 
+     // todo: remove the deleted tweet from the hashtags array
+ 
+          res.status(200).json(
+         new apiResponse(
+             200,
+             {},
+             "tweet deleted successfully"
+         )
+     )
+   } catch (error) {
+    
+    throw new apiError(500,"error in deleting tweet",
+        console.log(error)
     )
+   }
 })
 
 
