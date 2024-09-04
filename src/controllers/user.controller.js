@@ -8,7 +8,7 @@ import dotenv from 'dotenv'
 import mongoose from "mongoose";
 dotenv.config();
 import JsonWebTokenError from "jsonwebtoken/lib/JsonWebTokenError.js";
-import { uploadOnCloudinary,deleteImageOnCloudinary } from "../utiles/cloudinary.js";
+import { uploadOnCloudinary,deleteImageOnCloudinary,deleteManyImageOnCloudinary } from "../utiles/cloudinary.js";
 import fs, { unlink } from "fs"
 
 // function for generating referesh and access token
@@ -777,6 +777,9 @@ const deleteUser = asyncHandler(async(req,res)=>{
     try {
 
         const user = req.user;
+        const avtarPublicId = user?.avtar?.publicId
+        const coverPublicId = user?.coverImage?.publicId
+        const publicIds = [avtarPublicId,coverPublicId]
 
     if (!user ) {
         throw new apiError(400,
@@ -784,6 +787,8 @@ const deleteUser = asyncHandler(async(req,res)=>{
         )
         
     }
+
+    await deleteManyImageOnCloudinary(publicIds)
 
     await User.findByIdAndDelete(user._id)
 

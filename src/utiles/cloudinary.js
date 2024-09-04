@@ -66,4 +66,28 @@ const deleteImageOnCloudinary = async function (publicId){
 
    }
 }
-export{uploadOnCloudinary,deleteImageOnCloudinary};
+
+
+const deleteManyImageOnCloudinary = async function (publicIds){
+   try {
+   
+      if(!publicIds) {
+         throw new apiError(401, "pubic id is mendtory for deletion")
+      }
+
+     const response= await cloudinary.api.delete_resources(publicIds)
+
+      console.log("user images deleted successfully")
+      return response
+
+
+   } catch (error) {
+
+      
+    throw new apiError(500, "error in deleting multiple images on cloudinary",console.log(error))
+    
+
+
+   }
+}
+export{uploadOnCloudinary,deleteImageOnCloudinary,deleteManyImageOnCloudinary};
