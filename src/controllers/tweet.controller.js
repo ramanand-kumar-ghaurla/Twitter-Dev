@@ -5,7 +5,9 @@ import{createHashtag,bulkCreateHashtags,findByName} from "./hashtag.controller.j
 import {Tweet} from "../models/tweet.model.js"
 import mongoose from "mongoose"
 import {Views} from "../models/views.model.js"
-
+import { uploadOnCloudinary,deleteManyImageOnCloudinary } from "../utiles/cloudinary.js"
+import fs from "fs"
+import { response } from "express"
 
 const createTweet = asyncHandler(async(req,res)=>{
 
@@ -22,27 +24,69 @@ const createTweet = asyncHandler(async(req,res)=>{
 
    try {
      const user = req.user
-     const {content,imageUrl} = req.body
+     const {content} = req.body
+     const files = req.files
+     console.log(files, "array test")
 
-    
- 
-     if(!content){
-         throw new apiError(400,"tweet content is required")
- 
- 
+     let mediaPath
+     if(files && Array.isArray(files) && req.files.length >0){
+      mediaPath=  files.map( (file)=> file?.path)
      }
-   
+     
+     console.log(mediaPath,"media path")
+     const folderName = "/Twitter-Project/tweet-media"
+
+     let uploadedMedia
+     
+    
+     if(mediaPath){
+      uploadedMedia =  await Promise.all(mediaPath.map(async (path)=> await uploadOnCloudinary(path,folderName)))
+       
+      
+     }
+    
+     
+    let response
+    if(mediaPath){
+         response=  await Promise.all(uploadedMedia.map(async(media)=>{
+            const mediaUrl = media?.url || ""
+            const mediaPublicId = media?.public_id || ""
+    
+       return{mediaUrl,mediaPublicId}
+         }))
+    }
+
+
+
+     
+        if(!content){
+         throw new apiError(400,"tweet content is required")
+        }
+
+
+      
+        
+
+       
      
      // create tweet
  
      const tweet = await Tweet.create({
          content:content,
          postedBy:user._id,
-         imageUrl
+         media:response
+        
+        
+        
+        
      })
+     
+
+  
      user.posts.push(tweet._id)
      await user.save()
- 
+
+    
      // extract hashtags 
 
      const manageHashtags = async(content)=>{

@@ -3,6 +3,8 @@ import { Router } from "express";
 import { verifyJwt } from "../middlewares/verifyJWT.js";
 import { isOwner } from "../middlewares/isOwner.middleware.js";
 import {validate} from "../validators/validate.js"
+import { upload } from "../middlewares/multer,middleware.js";
+
 const router = Router()
 
 // import validation methods
@@ -21,6 +23,7 @@ import { getViews } from "../controllers/view.controller.js";
 // define routes
 
 router.route("/create-tweet").post(verifyJwt,
+        upload.array("media",2),
         tweetContentValidation(),validate,
         createTweet)
 router.route("/hashtag/:title").get(verifyJwt,tweetsOfHashtag)

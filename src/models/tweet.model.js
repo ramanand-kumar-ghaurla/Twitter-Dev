@@ -10,10 +10,13 @@ const tweetSchema=new Schema(
             trim:true,
         },
 
-        imageUrl:{
-            type:String,
-        
-        },
+        media:[
+            {
+                mediaUrl:String,
+                mediaPublicId:String
+            }
+        ],
+
         postedBy:{
             type:Schema.Types.ObjectId,
             ref:"User",

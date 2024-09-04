@@ -15,7 +15,7 @@ cloudinary.config({
 const uploadOnCloudinary = async function (localFilePath,folderName){
    try {
     if(!localFilePath && folderName) return null
-    console.log(folderName)                         
+                             
     // upload on cloudinary
 
     const response = await cloudinary.uploader.upload(localFilePath,{
@@ -25,7 +25,7 @@ const uploadOnCloudinary = async function (localFilePath,folderName){
 
     
     
-    console.log("uploaded image on cloudinary", response);
+    //console.log("uploaded image on cloudinary", response);
      fs.unlinkSync(localFilePath)
     return response;
     
