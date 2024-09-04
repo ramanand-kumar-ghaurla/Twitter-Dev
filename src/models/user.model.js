@@ -31,12 +31,14 @@ const userSchema = new Schema({
     },
 
     avtar:{
-        type:String,
+        url:String,
+        publicId:String
         
 
     },
     coverImage:{
-        type:String
+        url:String,
+        publicId:String
     },
     
     refereshToken:{

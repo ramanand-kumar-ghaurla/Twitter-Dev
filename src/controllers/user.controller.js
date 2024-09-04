@@ -8,7 +8,7 @@ import dotenv from 'dotenv'
 import mongoose from "mongoose";
 dotenv.config();
 import JsonWebTokenError from "jsonwebtoken/lib/JsonWebTokenError.js";
-import { uploadOnCloudinary } from "../utiles/cloudinary.js";
+import { uploadOnCloudinary,deleteImageOnCloudinary } from "../utiles/cloudinary.js";
 import fs, { unlink } from "fs"
 
 // function for generating referesh and access token
@@ -179,8 +179,12 @@ if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.leng
      email,
      fullName,
      password,
-     avtar:uploadedAvtar?.url || "",
-     coverImage:uploadedCoverImage?.url ||""
+     avtar:{
+        url:uploadedAvtar?.url || "",
+        publicId:uploadedAvtar?.public_id || ""                            },
+     coverImage:{
+        url:uploadedCoverImage?.url ||"",
+        publicId:uploadedCoverImage?.public_id || ""                                }
  })
  
  // check if the user is created or not
@@ -478,6 +482,148 @@ const updateccountDetails = asyncHandler(async(req,res)=>{
    }
 })
 
+// method for update user avtar image
+
+const updateUserAvtar = asyncHandler(async(req,res)=>{
+   
+   try {
+     const avtarLocalPath = req.file?.path
+     const folderName = "/Twitter-Project/user/avtar"
+     const user = req.user
+     const publicId = user.avtar?.publicId || ""
+    
+    
+     console.log(publicId, "public id")
+    
+     if(!avtarLocalPath){
+         throw new apiError(401,"please upload a valid avtar file")
+
+     }
+
+     if(publicId){
+         await deleteImageOnCloudinary(publicId)
+     } 
+     
+     const updatedAvtar = await uploadOnCloudinary(avtarLocalPath,folderName)
+ 
+   
+     const updatedUser = await User.findByIdAndUpdate(
+     user._id,
+     {
+         $set:{
+             avtar:{
+                 url:updatedAvtar?.url || "",
+                 publicId:updatedAvtar?.public_id || ""
+             }
+         }
+     },
+     {new :true}
+    ).select("-password")
+ 
+    let isAvtar = fs.existsSync(avtarLocalPath)
+   
+
+    if(isAvtar){
+        fs.unlinkSync(avtarLocalPath)
+
+    }
+    
+    res.status(200).json(
+   
+        new apiResponse(200,
+            updatedUser,
+            "user avtar updated successfully"
+        )
+       )
+ 
+   } catch (error) {
+let avtarLocalPath= req.file?.path
+    let isAvtar = fs.existsSync(avtarLocalPath)
+   
+
+    if(isAvtar){
+        fs.unlinkSync(avtarLocalPath)
+
+    }
+    
+    throw new apiError(500,"error in updating user avtar",
+        console.log(error)
+    )
+   }
+ 
+})
+
+// UPDATE use cover image
+
+const updateUserCoverImage = asyncHandler(async(req,res)=>{
+   
+    try {
+      const coverImageLocalPath = req.file?.path
+      const folderName = "/Twitter-Project/user/cover"
+      const user = req.user
+      const publicId = user.coverImage?.publicId || ""
+     
+     
+      console.log(publicId, "public id")
+     
+      if(!coverImageLocalPath){
+          throw new apiError(401,"please upload a valid cover image file")
+ 
+      }
+ 
+      if(publicId){
+          await deleteImageOnCloudinary(publicId)
+      } 
+      
+      const updatedCoverImage = await uploadOnCloudinary(coverImageLocalPath,folderName)
+  
+    
+      const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      {
+          $set:{
+              coverImage:{
+                  url:updatedCoverImage?.url || "",
+                  publicId:updatedCoverImage?.public_id || ""
+              }
+          }
+      },
+      {new :true}
+     ).select("-password")
+  
+     let isCover = fs.existsSync(coverImageLocalPath)
+    
+ 
+     if(isCover){
+         fs.unlinkSync(coverImageLocalPath)
+ 
+     }
+     
+     res.status(200).json(
+    
+         new apiResponse(200,
+             updatedUser,
+             "user avtar updated successfully"
+         )
+        )
+  
+    } catch (error) {
+        let coverImageLocalPath = req.file.path
+         let isCover = fs.existsSync(coverImageLocalPath)
+    
+ 
+     if(isCover){
+         fs.unlinkSync(coverImageLocalPath)
+ 
+     }
+     
+     throw new apiError(500,"error in updating user cover Image",
+         console.log(error)
+     )
+    }
+  
+ })
+
 // method for get user profile
 
 const getUserProfile = asyncHandler(async(req,res)=>{
@@ -664,6 +810,8 @@ export {
     refereshAccessToken,
     changeUserPassword,
     updateccountDetails,
+    updateUserAvtar,
+    updateUserCoverImage,
     getUserProfile,
     deleteUser
 }

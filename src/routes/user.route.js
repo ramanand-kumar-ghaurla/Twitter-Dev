@@ -6,6 +6,8 @@ import { loginUser,
         refereshAccessToken,
         changeUserPassword,
         updateccountDetails,
+        updateUserAvtar,
+        updateUserCoverImage,
         getUserProfile,
         deleteUser
         
@@ -52,6 +54,16 @@ router.route("/change-password").post(verifyJwt,changeUserPassword)
 router.route("/update-account-details").post(verifyJwt,
     updateccountDetailsValidator(),validate,
     updateccountDetails)
+router.route("/update-avtar").post(verifyJwt,
+                            upload.single("avtar"),
+                            updateUserAvtar
+)
+
+router.route("/update-cover-Image").post(verifyJwt,
+    upload.single("coverImage"),
+    updateUserCoverImage
+)
+
 router.route("/c/:username").get(verifyJwt,getUserProfile);
 router.route("/delete-account").post(verifyJwt,deleteUser)
 
