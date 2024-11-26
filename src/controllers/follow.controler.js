@@ -6,7 +6,7 @@ import {apiResponse} from "../utiles/apiResponse.js"
 import {User} from '../models/user.model.js'
 
 
-const followUser = asyncHandler(async(req,res)=>{
+const togglefollow = asyncHandler(async(req,res)=>{
 
    try {
      /**
@@ -20,28 +20,38 @@ const followUser = asyncHandler(async(req,res)=>{
      const currentUser = req.user
      
      const upcommingUser = await User.findOne(upcommingUsername)
+     if(!upcommingUser ){
+        throw new apiError(400,"user profile does not exists")
+    }
 
      const isFollowed = await Follow.findOne({follower:currentUser._id,following:upcommingUser._id})
      if(isFollowed){
-        throw new apiError(401,"you have already followed the user")
-     }
-        
+        var unfollowUser = await Follow.findOneAndDelete({follower:currentUser._id,following:upcommingUser._id})
 
-     if(!upcommingUser){
-        throw new apiError(400,"user profile missing")
-     }
-
-
-     const followUser = await Follow.create({
+     }else{
+        var followedUser = await Follow.create({
             follower: currentUser._id,
             following:upcommingUser._id
+            
      })
-      return  res.status(200).json(
+    
+     }
+        
+     if(unfollowUser){
+        return  res.status(200).json(
             new apiResponse(200,
-                followUser,
+                unfollowUser,
+                ` The user ${currentUser.username} successsfully unfollow the user profile of ${upcommingUser.username}`
+            )
+         )
+     }else{
+        return  res.status(200).json(
+            new apiResponse(200,
+                followedUser,
                 ` The user ${currentUser.username} successsfully followed the user profile of ${upcommingUser.username}`
             )
          )
+     }
         
 
         
@@ -49,7 +59,7 @@ const followUser = asyncHandler(async(req,res)=>{
  
    } catch (error) {
 
-    throw new apiError(500,"error in follow the user",
+    throw new apiError(500,"error in toggling follow the user",
         console.log(error)
     )
     
@@ -57,29 +67,7 @@ const followUser = asyncHandler(async(req,res)=>{
    
 })
 
-const unfollowUser  = asyncHandler(async(req,res)=>{
 
-    const upcommingUsername = req.params;
-    const currentUser = req.user;
-
-    console.log(upcommingUsername)
-
-   
-
-    const upcommingUser = await User.findOne(upcommingUsername)
-    if(!upcommingUser ){
-        throw new apiError(400,"user profile does not exists")
-    }
-
-
-   const unfollowUser = await Follow.findOneAndDelete({follower:currentUser._id,following:upcommingUser._id})
-
-  return res.status(200).json(
-    new apiResponse(200,{},
-        `The user ${currentUser.username} successfully unfollow the user ${upcommingUser.username}'s profile`
-    )
-   )
-})
 
 
 const getFollower = asyncHandler(async(req,res)=>{
@@ -157,4 +145,4 @@ const getFollowing = asyncHandler(async(req,res)=>{
     }
  })
 
-export {followUser,unfollowUser,getFollower,getFollowing}
+export {togglefollow,getFollower,getFollowing}

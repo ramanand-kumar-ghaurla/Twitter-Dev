@@ -14,7 +14,8 @@ import { tweetContentValidation } from "../validators/tweet.validator.js";
 // import controllers for routes
 import {createTweet,
         deleteTweet,
-        fetchTweet
+        fetchTweet,
+        getTweetsInBulk
 } from "../controllers/tweet.controller.js"
 import{tweetsOfHashtag} from "../controllers/hashtag.controller.js"
 
@@ -29,6 +30,7 @@ router.route("/create-tweet").post(verifyJwt,
 router.route("/hashtag/:title").get(verifyJwt,tweetsOfHashtag)
 router.route("/delete-tweet/:ObjectId").post(verifyJwt,deleteTweet)
 router.route("/tweet").get(verifyJwt,fetchTweet)
+router.route("/get-tweets").get(verifyJwt, getTweetsInBulk)
 
 // route only for post owner
 

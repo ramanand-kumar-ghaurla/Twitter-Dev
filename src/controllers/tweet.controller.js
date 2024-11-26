@@ -158,6 +158,12 @@ const createTweet = asyncHandler(async(req,res)=>{
  )
    } catch (error) {
 
+    let files 
+    files  = fs.existsSync(mediaPath)
+    if(files){
+        fs.unlinkSync(mediaPath)
+    }
+
     throw new apiError(500,"error in creating tweet",
         console.log(error)
     )
@@ -350,4 +356,31 @@ const fetchTweet = asyncHandler(async(req,res)=>{
    }
 })
 
-export{createTweet,deleteTweet,fetchTweet}
+const getTweetsInBulk = asyncHandler(async(req,res)=>{
+   try {
+     const pageNo = Number(req.query.pageNo) || 1
+     const limit = 6
+ 
+     const skip = (pageNo - 1) * limit
+ 
+     const tweets = await Tweet.find({
+ 
+     }).select('')
+     .sort({createdAt:-1})
+     .skip(skip)
+     .limit(limit)
+ 
+     if(tweets.length >0) res.status(200).json({
+         success:true,
+         tweets: tweets,
+         message:'Tweets fetched successfully'
+     })
+   } catch (error) {
+    throw new apiError(500,
+        "error in fetching tweet",
+        console.log(error))
+   }
+})
+
+
+export{createTweet,deleteTweet,fetchTweet, getTweetsInBulk}

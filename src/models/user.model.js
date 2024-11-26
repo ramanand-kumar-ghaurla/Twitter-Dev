@@ -102,6 +102,7 @@ userSchema.methods.generateAccessToken = function(){
     )
 }
 
+
 userSchema.methods.generateRefereshToken= function(){
     return jwt.sign(
         {

@@ -86,8 +86,8 @@ const toggleLike = asyncHandler(async(req,res)=>{
             var response= res.status(200).json(
                 new apiResponse(200,
                     {
-                        newLike:newLike,
-                        isLiked:true
+                        newLike,   
+                    isLiked:true
                     },
                     `the user ${user.username} successfully liked the ${modelType}`
                 )
@@ -120,4 +120,45 @@ const toggleLike = asyncHandler(async(req,res)=>{
 
 })
 
-export {toggleLike}
+const getLikeStatus = asyncHandler(async(req,res)=>{
+    try {
+        const user = req.user
+        const modelType  = req.query.modelType
+        const modelId = req.query.modelId
+
+        const existLike = await Like.findOne({
+            onModel: modelType,
+            likedToModel: modelId,
+            likedBy:user._id
+        })
+
+        if (existLike) {
+            var response= res.status(200).json(
+                new apiResponse(200,
+                    {   
+                    likeStatus:true
+                    }
+                )
+            )
+        } else {
+             var response= res.status(200).json(
+                new apiResponse(200,
+                    {
+                        likeStatus:false
+                    }
+                )
+            )
+        }
+
+        return res.status(200).json(
+            {data:response}
+        )
+
+    } catch (error) {
+        throw new apiError(500,"error in getting like status",
+            console.log(error)
+        )
+    }
+})
+
+export {toggleLike, getLikeStatus}
