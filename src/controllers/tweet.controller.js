@@ -263,11 +263,29 @@ const fetchTweet = asyncHandler(async(req,res)=>{
                 as:"postedBy",
                 pipeline:[
                     {
+                        $lookup:{
+                            from:"follows",
+                            localField:"_id",
+                            foreignField:"following",
+                            as:"followers",
+                        }
+                    },
+                    {
+                        $lookup:{
+                            from:"follows",
+                            localField:"_id",
+                            foreignField:"follower",
+                            as:"followingTo",
+                        }
+                    },
+                  
+                    {
                         $project:{
-                            _id:0,
+                            _id:1,
                             username:1,
                             fullName:1,
-                            avtar:1
+                            avtar:1,
+                           followers:1
                         }
                     }
                 ]
@@ -290,6 +308,15 @@ const fetchTweet = asyncHandler(async(req,res)=>{
                 postedBy:{
                     $first:"$postedBy"
                 },
+               isFollowed:{
+                        $cond:{
+                            if :{
+                                $in:[req.user?._id,"$postedBy.followers.follower"]
+                            },
+                            then:true,
+                            else:false,
+                        }
+                    }
             }
         },
         // console.log("fields added"),
@@ -300,13 +327,16 @@ const fetchTweet = asyncHandler(async(req,res)=>{
                 likeCount:1,
                 commentCount:1,
                 viewCount:1,
-                postedBy:1
+                postedBy:1,
+                isFollowed:1
             }
         },
         // console.log("final"),
        
 
     ])
+
+    console.log('tweet', tweet)
 
         // create view obj and push it on views array of post
 
@@ -359,16 +389,77 @@ const fetchTweet = asyncHandler(async(req,res)=>{
 const getTweetsInBulk = asyncHandler(async(req,res)=>{
    try {
      const pageNo = Number(req.query.pageNo) || 1
-     const limit = 6
+     const limit = 2
  
      const skip = (pageNo - 1) * limit
  
-     const tweets = await Tweet.find({
- 
-     }).select('')
-     .sort({createdAt:-1})
-     .skip(skip)
-     .limit(limit)
+     const tweets = await Tweet.aggregate([
+        { $sort: { createdAt: -1 }  }, 
+        { $skip: skip },
+         { $limit: limit  },
+        {
+          $lookup: {
+            from: "users",
+            localField: "postedBy",
+            foreignField: "_id",
+            as: "postedBy",
+            pipeline: [
+              {
+                $lookup: {
+                  from: "follows",
+                  localField: "_id",
+                  foreignField: "following",
+                  as: "followers",
+                },
+              },
+              {
+                $lookup: {
+                  from: "follows",
+                  localField: "_id",
+                  foreignField: "follower",
+                  as: "followingTo",
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  username: 1,
+                  fullName: 1,
+                  avatar: 1,
+                  
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: "$postedBy",
+        },
+        {
+          $addFields: {
+            likeCount: { $size: { $ifNull: ["$likes", []] } },
+            commentCount: { $size: { $ifNull: ["$comments", []] } },
+            viewCount: { $size: { $ifNull: ["$views", []] } },
+
+            isFollowed: {
+              $in: [new mongoose.Types.ObjectId(req.user._id), "$postedBy.followers.follower"],
+            },
+          },
+        },
+        {
+          $project: {
+            
+            content: 1,
+            imageUrl: 1,
+            likeCount: 1,
+            commentCount: 1,
+            viewCount: 1,
+            postedBy: 1,
+            isFollowed: 1,
+          },
+        },
+      ]);
+      
  
      if(tweets.length >0) res.status(200).json({
          success:true,
