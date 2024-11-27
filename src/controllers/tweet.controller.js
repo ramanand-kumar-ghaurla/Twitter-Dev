@@ -389,7 +389,7 @@ const fetchTweet = asyncHandler(async(req,res)=>{
 const getTweetsInBulk = asyncHandler(async(req,res)=>{
    try {
      const pageNo = Number(req.query.pageNo) || 1
-     const limit = 2
+     const limit = 6
  
      const skip = (pageNo - 1) * limit
  
@@ -432,18 +432,26 @@ const getTweetsInBulk = asyncHandler(async(req,res)=>{
             ],
           },
         },
-        {
-          $unwind: "$postedBy",
-        },
+        
         {
           $addFields: {
             likeCount: { $size: { $ifNull: ["$likes", []] } },
             commentCount: { $size: { $ifNull: ["$comments", []] } },
             viewCount: { $size: { $ifNull: ["$views", []] } },
 
-            isFollowed: {
-              $in: [new mongoose.Types.ObjectId(req.user._id), "$postedBy.followers.follower"],
+            isFollowed:{
+                $cond:{
+                    if :{
+                        $in:[req.user?._id,"$postedBy.followers.follower"]
+                    },
+                    then:true,
+                    else:false,
+                }
             },
+            followers:{
+                
+            }
+            
           },
         },
         {

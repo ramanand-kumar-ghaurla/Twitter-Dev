@@ -89,13 +89,18 @@ const getFollower = asyncHandler(async(req,res)=>{
  
     const userFollowers = await Follow.find({
      following:upcommingUser._id,
-    }).select("username")
+    }).populate('follower', {
+        username:1,
+        fullName:1,
+        avtar:1
+    } ).select('follower')
 
-    console.log(userFollowers)
- 
+      
+
+   
    return res.status(200).json(
      new apiResponse(200,
-         userFollowers,
+        userFollowers,
          "User follower fetched successfully",
      )
     )
@@ -126,11 +131,13 @@ const getFollowing = asyncHandler(async(req,res)=>{
     }
   
      const userFollowers = await Follow.find({
-      follower:upcommingUser._id
-     }).select("username")
- 
-     console.log(userFollowers)
-  
+      follower:upcommingUser._id,
+    }).populate('following', {
+        username:1,
+        fullName:1,
+        avtar:1
+    } ).select('following')
+
     return res.status(200).json(
       new apiResponse(200,
           userFollowers,
