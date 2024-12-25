@@ -24,30 +24,39 @@ const togglefollow = asyncHandler(async(req,res)=>{
         throw new apiError(400,"user profile does not exists")
     }
 
+   
+    let followStatus
      const isFollowed = await Follow.findOne({follower:currentUser._id,following:upcommingUser._id})
      if(isFollowed){
         var unfollowUser = await Follow.findOneAndDelete({follower:currentUser._id,following:upcommingUser._id})
+         followStatus=false
 
      }else{
         var followedUser = await Follow.create({
             follower: currentUser._id,
             following:upcommingUser._id
-            
+           
      })
     
+           followStatus=true
      }
         
      if(unfollowUser){
         return  res.status(200).json(
             new apiResponse(200,
-                unfollowUser,
+                {unfollowUser,
+                    followStatus
+                },
                 ` The user ${currentUser.username} successsfully unfollow the user profile of ${upcommingUser.username}`
             )
          )
      }else{
         return  res.status(200).json(
             new apiResponse(200,
-                followedUser,
+               { followedUser,
+                followStatus
+               },
+               
                 ` The user ${currentUser.username} successsfully followed the user profile of ${upcommingUser.username}`
             )
          )

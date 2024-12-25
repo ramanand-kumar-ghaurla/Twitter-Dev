@@ -308,7 +308,7 @@ const fetchTweet = asyncHandler(async(req,res)=>{
                 postedBy:{
                     $first:"$postedBy"
                 },
-               isFollowed:{
+               followStatus:{
                         $cond:{
                             if :{
                                 $in:[req.user?._id,"$postedBy.followers.follower"]
@@ -328,7 +328,7 @@ const fetchTweet = asyncHandler(async(req,res)=>{
                 commentCount:1,
                 viewCount:1,
                 postedBy:1,
-                isFollowed:1
+                followStatus:1
             }
         },
         // console.log("final"),
@@ -439,7 +439,7 @@ const getTweetsInBulk = asyncHandler(async(req,res)=>{
             commentCount: { $size: { $ifNull: ["$comments", []] } },
             viewCount: { $size: { $ifNull: ["$views", []] } },
 
-            isFollowed:{
+            followStatus:{
                 $cond:{
                     if :{
                         $in:[req.user?._id,"$postedBy.followers.follower"]
@@ -449,7 +449,7 @@ const getTweetsInBulk = asyncHandler(async(req,res)=>{
                 }
             },
             followers:{
-                
+
             }
             
           },
@@ -463,7 +463,7 @@ const getTweetsInBulk = asyncHandler(async(req,res)=>{
             commentCount: 1,
             viewCount: 1,
             postedBy: 1,
-            isFollowed: 1,
+            followStatus: 1,
           },
         },
       ]);

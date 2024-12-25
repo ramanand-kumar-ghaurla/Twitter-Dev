@@ -193,11 +193,23 @@ if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.leng
      "-password -refereshToken"
  )
  
+
  if (!createdUser){
      throw new apiError(500, "error in registring user")
  }
+
+ const {accessToken,refereshToken}=await generateAccessAndRefereshToken(user._id)
+ const options={
+    httpOnly:true,
+    secure:true,
+    path:'/'
+
+ }
  
- return res.status(201).json(
+ return res.status(201)
+ .cookie("accessToken",accessToken,options)
+ .cookie("refereshToken",refereshToken,options)
+ .json(
      new apiResponse(
          200,
          createdUser,
@@ -276,7 +288,8 @@ if(!isPasswordValid){
 
  const options={
     httpOnly:true,
-    secure:true
+    secure:true,
+    path:'/'
 
  }
  return res.status(200)
@@ -309,6 +322,7 @@ const logoutUser = asyncHandler(async(req,res)=>{
         const options = {
             httpOnly:true,
             secure:true,
+            
         }
         res.status(200)
         .clearCookie("accessToken",options)
@@ -710,7 +724,7 @@ const getUserProfile = asyncHandler(async(req,res)=>{
                     postCount:{
                         $size:"$posts"
                     },
-                    isFollowed:{
+                    followStatus:{
                         $cond:{
                             if :{
                                 $in:[req.user?._id,"$followers.follower"]
@@ -735,7 +749,7 @@ const getUserProfile = asyncHandler(async(req,res)=>{
                     postCount:1,
                     followerCount:1,
                     followingToCount:1,
-                    isFollowed:1,
+                    followStatus:1,
                     createdAt:1,
                    
                    
