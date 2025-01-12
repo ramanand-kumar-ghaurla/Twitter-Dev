@@ -29,7 +29,7 @@ router.route("/create-tweet").post(verifyJwt,
         createTweet)
 router.route("/hashtag/:title").get(verifyJwt,tweetsOfHashtag)
 router.route("/delete-tweet/:ObjectId").post(verifyJwt,deleteTweet)
-router.route("/tweet").get(verifyJwt,fetchTweet)
+router.route("/tweet/:tweetId").get(verifyJwt,fetchTweet)
 router.route("/get-tweets").get(verifyJwt, getTweetsInBulk)
 
 // route only for post owner

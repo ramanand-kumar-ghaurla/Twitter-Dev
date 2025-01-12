@@ -39,7 +39,8 @@ const toggleLike = asyncHandler(async(req,res)=>{
         const modelType  = req.query.modelType
         const modelId = req.query.modelId
         
-
+            console.log('modeltype', modelType)
+            console.log('modelid', modelId)
         // step 2 
 
         const modelToLike= await findModel(modelType,modelId)
@@ -161,4 +162,41 @@ const getLikeStatus = asyncHandler(async(req,res)=>{
     }
 })
 
-export {toggleLike, getLikeStatus}
+const getLikes = asyncHandler(async(req,res)=>{
+    try {
+        const user = req.user
+        const modelType  = req.query.modelType
+        const modelId = req.query.modelId
+
+        const likes = await Like.find({
+            onModel: modelType,
+            likedToModel: modelId,
+            
+        }).populate('likedBy',
+    {
+        username:1,
+        fullName:1,
+        avtar:1
+    })
+
+       
+           
+            
+
+        return res.status(200).json(
+            new apiResponse(200,
+                {
+                    likes
+                },
+                
+            )
+        )
+
+    } catch (error) {
+        throw new apiError(500,"error in getting like status",
+            console.log(error)
+        )
+    }
+})
+
+export {toggleLike, getLikeStatus,getLikes}

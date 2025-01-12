@@ -202,7 +202,8 @@ if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.leng
  const options={
     httpOnly:true,
     secure:true,
-    path:'/'
+    path:'/',
+    sameSite:'none'
 
  }
  
@@ -330,7 +331,7 @@ const logoutUser = asyncHandler(async(req,res)=>{
         .json(
             {
                 success:true,
-                messase:"User logged out successfully "
+                message:"User logged out successfully "
             }
         )
         
@@ -366,7 +367,7 @@ const refereshAccessToken = asyncHandler(async(req,res)=>{
   
         
        
-        const user = await User.findById(decodedToken._id)
+        const user = await User.findById(decodedToken._id).select('-password ')
 
         if (!user) {
           throw  new apiError(401,"invaid user")
@@ -395,8 +396,7 @@ const refereshAccessToken = asyncHandler(async(req,res)=>{
     .json({
         success:true,
         data:{
-            accessToken,
-            refereshToken:refereshToken,
+            user:user,refereshToken
         },
         messase:"New access and referesh tokens generated successfully"
 
@@ -644,8 +644,8 @@ const getUserProfile = asyncHandler(async(req,res)=>{
 
     try {
         const {username} = req.params;
-        const limit = Number(3)
-        const page = Number(req.query.pagen|| 1)
+        const limit = Number(6)
+        const page = Number(req.query.pageNo|| 1)
         const skip = (page-1)*limit
     
         if(!username?.trim()){
@@ -685,25 +685,33 @@ const getUserProfile = asyncHandler(async(req,res)=>{
                     foreignField:"_id",
                     as:"posts",
                     pipeline:[
+                        
 
                         {
                             $sort: {
                               
                               createdAt: -1,
-                            }
+                            },
+                           
                           },
-                         
+                         {
+                            $skip:skip
+                         },
+                         {
+                            $limit:limit
+                         },
                        
                        {
                             $project:{
                                 content:1,
+                                
                                 
                                 likes:{$size:"$likes"},
                                 comments:{$size:"$comments"},
                                 views:{$size:"$views"},
                                 createdAt:1,
                                
-                                _id:0
+                                
                             }
                         }
                     ]
@@ -752,7 +760,7 @@ const getUserProfile = asyncHandler(async(req,res)=>{
                     followStatus:1,
                     createdAt:1,
                    
-                   
+                   followers:1
     
                 }
             }
@@ -822,6 +830,79 @@ const deleteUser = asyncHandler(async(req,res)=>{
     }
 })
 
+const getProfileInBulk = asyncHandler(async(req,res)=>{
+
+    try {
+        const pageNo = Number(req.query.pageNo) || 1
+        const limit = 6
+    
+        const skip = (pageNo - 1) * limit
+
+        const profiles = await User.aggregate([
+            { $sort: { createdAt: 1 }  }, 
+            { $skip: skip },
+            { $limit: limit  },
+
+             {
+                $lookup:{
+                    from:"follows",
+                    localField:"_id",
+                    foreignField:"following",
+                    as:"followers",
+                }
+            },
+    
+            {
+                $lookup:{
+                    from:"follows",
+                    localField:"_id",
+                    foreignField:"follower",
+                    as:"followingTo",
+                }
+            },
+            {
+                $addFields:{
+                    followStatus:{
+                        $cond:{
+                            if :{
+                                $in:[req.user?._id,"$followers.follower"]
+                            },
+                            then:true,
+                            else:false,
+                        }
+                    }
+                }
+            },
+            {
+                $project:{
+                    username:1,
+                    fullName:1,
+                    followStatus:1,
+                }
+            }
+
+        ])
+        if(!profiles?.length){
+            throw new apiError(404,"no any profile does  exists")
+        }
+    
+        res.status(200).json(
+            new apiResponse(200,
+                profiles,
+                "user profiles feched successfully",
+            )
+        )
+
+        
+
+    } catch (error) {
+        throw new apiError(500,
+            "error in getting user profile",
+            console.log(error)
+        )
+        
+    }
+})
 export {
     registerUser,
     loginUser,
@@ -832,5 +913,6 @@ export {
     updateUserAvtar,
     updateUserCoverImage,
     getUserProfile,
-    deleteUser
+    deleteUser,
+    getProfileInBulk,
 }

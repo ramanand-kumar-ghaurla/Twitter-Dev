@@ -105,7 +105,7 @@ const getCommentsOfTweet = asyncHandler(async(req,res)=>{
          */
 
         const user= req.user
-        const tweetId= req.query.tweetId
+        const {tweetId}= req.query.tweetId || req.params
         console.log(tweetId)
 
         if(!tweetId){
@@ -220,7 +220,7 @@ const getCommentsOfTweet = asyncHandler(async(req,res)=>{
 const getCommentOfComment = asyncHandler(async(req,res)=>{
 
     try {
-        const commentId= req.query.commentId
+        const {commentId}= req.query.commentId || req.params
             console.log(commentId)
     
             const commentsOfComment = await Comment.aggregate([

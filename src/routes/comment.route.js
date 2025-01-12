@@ -14,8 +14,8 @@ import { createComment,getCommentsOfTweet,getCommentOfComment } from "../control
 // define the routes
 
 router.route("/create-comment").post(verifyJwt,commentValidation(),validate, createComment)
-router.route("/tweet-comments").get(verifyJwt,getCommentsOfTweet)
-router.route("/comments-replies").get(verifyJwt,getCommentOfComment)
+router.route("/tweet-comments/:tweetId").get(verifyJwt,getCommentsOfTweet)
+router.route("/comments-replies/:commentId").get(verifyJwt,getCommentOfComment)
 
 
 export default router

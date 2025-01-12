@@ -9,7 +9,8 @@ import { loginUser,
         updateUserAvtar,
         updateUserCoverImage,
         getUserProfile,
-        deleteUser
+        deleteUser,
+        getProfileInBulk
         
     } from '../controllers/user.controller.js';
 
@@ -66,6 +67,7 @@ router.route("/update-cover-Image").post(verifyJwt,
 
 router.route("/c/:username").get(verifyJwt,getUserProfile);
 router.route("/delete-account").post(verifyJwt,deleteUser)
+router.route("/get-profiles-bulk").get(verifyJwt,getProfileInBulk);
 
 
 

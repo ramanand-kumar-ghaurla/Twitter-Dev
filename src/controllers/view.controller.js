@@ -24,6 +24,7 @@ const getViews = asyncHandler(async(req,res)=>{
         path:"viewedBy",
         select:{
             username:1,
+            fullName:1,
             _id:0,
             
             }

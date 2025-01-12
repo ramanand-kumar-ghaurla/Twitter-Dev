@@ -239,7 +239,7 @@ const fetchTweet = asyncHandler(async(req,res)=>{
       * show view,like and comment  count on post 
       * 
       */
-     const tweetId= req.query.tweetId
+     const {tweetId} = req.params
      console.log(tweetId)
         const user= req.user
         const userId=user._id
@@ -262,22 +262,7 @@ const fetchTweet = asyncHandler(async(req,res)=>{
                 foreignField:"_id",
                 as:"postedBy",
                 pipeline:[
-                    {
-                        $lookup:{
-                            from:"follows",
-                            localField:"_id",
-                            foreignField:"following",
-                            as:"followers",
-                        }
-                    },
-                    {
-                        $lookup:{
-                            from:"follows",
-                            localField:"_id",
-                            foreignField:"follower",
-                            as:"followingTo",
-                        }
-                    },
+                   
                   
                     {
                         $project:{
@@ -285,12 +270,86 @@ const fetchTweet = asyncHandler(async(req,res)=>{
                             username:1,
                             fullName:1,
                             avtar:1,
-                           followers:1
+                           
                         }
                     }
                 ]
             },
             
+        },
+        {
+            $lookup:{
+                from:"likes",
+                localField:"likes",
+                foreignField:"_id",
+                as:"likes",
+                pipeline:[
+
+                    {
+                        $lookup:{
+                            from:"users",
+                            localField:"likedBy",
+                            foreignField:"_id",
+                            as:"likedBy",
+                            pipeline:[
+                                {
+                                    $lookup:{
+                                        from:"follows",
+                                        localField:"_id",
+                                        foreignField:"following",
+                                        as:"followers",
+                                    }
+                                },
+                                {
+                                    $lookup:{
+                                        from:"follows",
+                                        localField:"_id",
+                                        foreignField:"follower",
+                                        as:"followingTo",
+                                    }
+                                },
+                                {
+                                    $addFields:{
+                                        followStatus:{
+                                            $cond:{
+                                                if :{
+                                                    $in:[req.user?._id,"$followers.follower"]
+                                                },
+                                                then:true,
+                                                else:false,
+                                            },
+            
+                                        }
+                                    }
+                                },
+                                {
+                                    $project:{
+                                        username:1,
+                                        fullName:1,
+                                        avtar:1,
+                                        followStatus:1,
+                                       
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $addFields:{
+                            likedBy:{
+                                $first:"$likedBy"
+                            }
+                        }
+                    },
+                  
+                    {
+                        $project:{
+                            likedBy:1,
+                           
+                        }
+                    }
+                ]
+            }
         },
         // console.log("forth lookup"),
         {
@@ -308,15 +367,7 @@ const fetchTweet = asyncHandler(async(req,res)=>{
                 postedBy:{
                     $first:"$postedBy"
                 },
-               followStatus:{
-                        $cond:{
-                            if :{
-                                $in:[req.user?._id,"$postedBy.followers.follower"]
-                            },
-                            then:true,
-                            else:false,
-                        }
-                    }
+             
             }
         },
         // console.log("fields added"),
@@ -328,7 +379,8 @@ const fetchTweet = asyncHandler(async(req,res)=>{
                 commentCount:1,
                 viewCount:1,
                 postedBy:1,
-                followStatus:1
+                followStatus:1,
+                likes:1
             }
         },
         // console.log("final"),
@@ -374,7 +426,7 @@ const fetchTweet = asyncHandler(async(req,res)=>{
 
      res.status(200).json(
         new apiResponse(200,
-            tweet,
+            tweet[0],
             "tweet fetched successfully"
         )
      )
