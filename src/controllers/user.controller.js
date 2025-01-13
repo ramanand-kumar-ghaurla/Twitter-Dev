@@ -753,6 +753,8 @@ const getUserProfile = asyncHandler(async(req,res)=>{
                     
                     username:1,
                     fullName:1,
+                    avtar:1,
+                    coverImage:1,
                     posts:1,
                     postCount:1,
                     followerCount:1,
@@ -770,6 +772,8 @@ const getUserProfile = asyncHandler(async(req,res)=>{
     
         ]);
 
+
+        
         
         if(!profile?.length){
             throw new apiError(404,"user profile does not exists")
@@ -841,7 +845,7 @@ const getProfileInBulk = asyncHandler(async(req,res)=>{
         const profiles = await User.aggregate([
             { $sort: { createdAt: 1 }  }, 
             { $skip: skip },
-            { $limit: limit  },
+            { $limit: (limit + 1)  },
 
              {
                 $lookup:{
@@ -878,19 +882,34 @@ const getProfileInBulk = asyncHandler(async(req,res)=>{
                     username:1,
                     fullName:1,
                     followStatus:1,
+                    avtar:1
                 }
             }
 
         ])
+
+        let hasMore 
+        if(profiles.length > limit){
+          hasMore = true
+        }else{
+          hasMore = false
+        }
+  
+        const returnedProfiles = profiles.slice(0,limit)
+
+
         if(!profiles?.length){
             throw new apiError(404,"no any profile does  exists")
         }
     
         res.status(200).json(
-            new apiResponse(200,
-                profiles,
-                "user profiles feched successfully",
-            )
+            {
+         success:true,
+         profiles: returnedProfiles,
+         pageNo : pageNo,
+         hasMore,
+         message:'Profiles fetched successfully'
+            }
         )
 
         

@@ -441,14 +441,14 @@ const fetchTweet = asyncHandler(async(req,res)=>{
 const getTweetsInBulk = asyncHandler(async(req,res)=>{
    try {
      const pageNo = Number(req.query.pageNo) || 1
-     const limit = 6
+     const limit = 10
  
      const skip = (pageNo - 1) * limit
  
      const tweets = await Tweet.aggregate([
         { $sort: { createdAt: -1 }  }, 
         { $skip: skip },
-         { $limit: limit  },
+         { $limit: limit +1 },
         {
           $lookup: {
             from: "users",
@@ -477,7 +477,7 @@ const getTweetsInBulk = asyncHandler(async(req,res)=>{
                   _id: 1,
                   username: 1,
                   fullName: 1,
-                  avatar: 1,
+                  avtar: 1,
                   
                 },
               },
@@ -520,10 +520,20 @@ const getTweetsInBulk = asyncHandler(async(req,res)=>{
         },
       ]);
       
+      let hasMore 
+      if(tweets.length > limit){
+        hasMore = true
+      }else{
+        hasMore = false
+      }
+
+      const returnedTweet = tweets.slice(0,limit)
  
      if(tweets.length >0) res.status(200).json({
          success:true,
-         tweets: tweets,
+         tweets: returnedTweet,
+         pageNo : pageNo,
+         hasMore,
          message:'Tweets fetched successfully'
      })
    } catch (error) {
