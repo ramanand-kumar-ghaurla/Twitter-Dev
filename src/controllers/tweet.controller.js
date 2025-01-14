@@ -374,6 +374,7 @@ const fetchTweet = asyncHandler(async(req,res)=>{
         {
             $project:{
                 content:1,
+                media:1,
                 imageUrl:1,
                 likeCount:1,
                 commentCount:1,

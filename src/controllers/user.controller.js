@@ -455,13 +455,22 @@ const changeUserPassword = asyncHandler(async(req,res)=>{
 const updateccountDetails = asyncHandler(async(req,res)=>{
 
    try {
-     const {fullName,username} = req.body
+     let {fullName,username} = req.body
  
+     console.log('req body',req.body)
      if(!(username || fullName)){
          throw new apiError(400,
              "provide at least full name or username to update "
          )
      }
+
+     if(username === ''){
+        username = undefined
+     }else if(fullName === ''){
+        fullName = undefined
+     }
+
+     
  
      const user = await User.findByIdAndUpdate(
          req.user._id,
@@ -470,9 +479,7 @@ const updateccountDetails = asyncHandler(async(req,res)=>{
                  fullName,
                  username,
              }
-                
-             
-         },
+                },
          {new:true },
          
      ).select("-password")

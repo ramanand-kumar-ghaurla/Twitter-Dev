@@ -62,9 +62,7 @@ const userLoginValidator = () => {
   const updateccountDetailsValidator= ()=> {
    return[ body("username")
         .trim()
-        .optional()
-        .notEmpty()
-        .withMessage("username is required")
+        .optional({checkFalsy:true})
         .isLength({min:7})
         .withMessage("username must be at least 7 characters")
         .matches(
@@ -73,8 +71,6 @@ const userLoginValidator = () => {
         .withMessage("username must be coantain only lowercase, alphanumeric and special characters '_' and '.' "),
 
         body("fullName")
-        .notEmpty()
-        .withMessage("full name is required")
         .isString()
         .withMessage("full name must be a string")
         .optional()
