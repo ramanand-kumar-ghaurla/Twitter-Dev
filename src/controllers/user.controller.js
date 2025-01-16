@@ -284,7 +284,7 @@ if(!isPasswordValid){
 
  const {accessToken,refereshToken}=await generateAccessAndRefereshToken(user._id)
 
- const loggedInUser = await User.findById(user._id).select("-password -refereshToken")
+ const loggedInUser = await User.findById(user._id).select("-password -refereshToken -posts")
 
 
  const options={
@@ -299,9 +299,7 @@ if(!isPasswordValid){
  .json(
     new apiResponse(
         200,
-        {
-            user:loggedInUser,refereshToken,accessToken
-        },
+       loggedInUser,
         "user logged in successfully"
     )
  )
@@ -396,7 +394,8 @@ const refereshAccessToken = asyncHandler(async(req,res)=>{
     .json({
         success:true,
         data:{
-            user:user,refereshToken
+            user:user,
+            refereshToken
         },
         messase:"New access and referesh tokens generated successfully"
 
@@ -651,7 +650,7 @@ const getUserProfile = asyncHandler(async(req,res)=>{
 
     try {
         const {username} = req.params;
-        const limit = Number(6)
+        const limit = Number(10)
         const page = Number(req.query.pageNo|| 1)
         const skip = (page-1)*limit
     
@@ -929,6 +928,40 @@ const getProfileInBulk = asyncHandler(async(req,res)=>{
         
     }
 })
+
+const getCurrentUser = asyncHandler(async(req,res)=>{
+
+    try {
+        const userId = req.user._id
+
+        
+
+        if(!userId){
+            throw new apiError(401, 'unauthorized user login please')
+        }
+
+        const user = await User.findById(userId).select('-password -posts')
+
+        console.log('user  in get current user',user)
+
+        if(!user){
+            throw new apiError(404, ' user does not exist register please')
+        }
+
+        res.status(200).json({
+            success:true,
+            user,
+            message:'got user successfully'
+        })
+        
+    } catch (error) {
+         throw new apiError(500,
+            "error in getting user profile",
+            console.log(error)
+        )
+    }
+})
+
 export {
     registerUser,
     loginUser,
@@ -941,4 +974,5 @@ export {
     getUserProfile,
     deleteUser,
     getProfileInBulk,
+    getCurrentUser
 }
