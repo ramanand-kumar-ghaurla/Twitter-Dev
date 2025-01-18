@@ -73,7 +73,7 @@ const toggleLike = asyncHandler(async(req,res)=>{
                 likedBy:user._id
             })
 
-            console.log("new like :",newLike)
+           
             
             modelToLike.likes.push(newLike._id)
             await modelToLike.save()
@@ -114,8 +114,9 @@ const toggleLike = asyncHandler(async(req,res)=>{
 
 
     } catch (error) {
+        console.log(error)
         throw new apiError(500,"error in toggeling like",
-            console.log(error)
+            
         )
     }
 
@@ -152,13 +153,13 @@ const getLikeStatus = asyncHandler(async(req,res)=>{
         }
 
         return res.status(200).json(
-            {data:response}
+            response
         )
 
     } catch (error) {
-        throw new apiError(500,"error in getting like status",
-            console.log(error)
-        )
+        console.log(error)
+
+        throw new apiError(500,"error in getting like status")
     }
 })
 
@@ -193,8 +194,9 @@ const getLikes = asyncHandler(async(req,res)=>{
         )
 
     } catch (error) {
+        console.log(error)
         throw new apiError(500,"error in getting like status",
-            console.log(error)
+            
         )
     }
 })

@@ -794,9 +794,10 @@ const getUserProfile = asyncHandler(async(req,res)=>{
 
         console.log(profile)
     } catch (error) {
+        console.log(error)
         throw new apiError(500,
             "error in getting user profile",
-            console.log(error)
+            
         )
     }
 
@@ -832,9 +833,10 @@ const deleteUser = asyncHandler(async(req,res)=>{
     )
         
     } catch (error) {
+        console.log(error)
         throw new apiError(500,
             "error in deleting the user account",
-            console.log(error)
+            
         )
         
     }
